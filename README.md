@@ -16,6 +16,7 @@ This suite contains sh scripts designed to complement programming with commands 
 The script or bash, that include other scripts also include 'include' and 'tipo'. See 'include'.
 
 It's recommended to keep these scripts in a folder included in your PATH, such as /home/code/*
+
 PATH=$PATH:~/code
 
 Some of these scripts use the /tmp/vacio folder to work with wildcards [*|?] without any problems.
