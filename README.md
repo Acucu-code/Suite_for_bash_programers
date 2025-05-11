@@ -19,6 +19,8 @@ It's recommended to keep these scripts in a folder included in your PATH, such a
 
 PATH=$PATH:~/code
 
+Some of these scripts only work if they are included in '. script'.
+
 Some of these scripts use the /tmp/vacio folder to work with wildcards [*|?] without any problems.
 
 To obtain information about a command, it is usually enough to run it without options.
