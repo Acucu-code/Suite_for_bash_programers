@@ -21,3 +21,4 @@ PATH=$PATH:~/code
 
 Some of these scripts use the /tmp/vacio folder to work with wildcards [*|?] without any problems.
 
+To obtain information about a command, it is usually enough to run it without options.
