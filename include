@@ -1,0 +1,72 @@
+#!/bin/sh
+# oxr 2025
+# Gestiona la inclusion de codigo a un script o al shell. Las ventajas de usarlo
+# en vez de '. archivo' directamente, es que controla que archivos han sido
+# incluidos, ya por otro archivo previamente incluido o por el brutal caso de que
+# dos archivos se incluyan mutuamente; evitando asi la recursion de inclusiones
+# en el primer caso, mas un bucle infinito en el segundo. Todo esto vale para
+# inclusion en bash, menos controlar las inclusiones mutuas.
+#
+# Desde linea de comandos de 'bash':
+#
+# >    . include [-l] script_1 [script_2 ...] # la prinera vez, luego sin '. '
+#
+# '-l' Para ver informacion del proceso de inclusion
+#
+# En script 'sh':
+#
+# >    [ $include_ctl || ] . include ; include script_1 [script_2 ...]
+#
+# Lo de '$include_ctl' es para ahorrar procesamiento aunque no es obligatorio,
+#
+
+
+[ $include_ctl ] && {
+	# $include_l || include_log "47;95" REP "$include_o($include_p)\t$include_i"
+	return
+} || {
+	# $include_l || include_log "44;97" FOR "$include_o($include_p)\t$include_i"
+	include_ctl=true
+	include_c=1
+	[ "$1" = "-l" ] && [ "${0##*/}" = "bash" -o "${0##*/}" = "include" ] && { include_l=false ; shift ;} || include_l=true # false es true
+	# include_o=${0##*/} include_i="$@" ; read include_p < /proc/$$/comm
+	. tipo
+}
+
+
+include_log(){
+local x="" y=""
+[ ${#BASH} -eq 0 ] || local include_e="-e"
+[ ${#3} -eq 0 ] && y=$include_i || x=$include_c
+echo $include_e $x '\t\e[1;'$1'm'"$2 $include_v"'\e[0m\t\t'$y$3
+}
+
+
+include(){
+local include_v="" include_p="" include_o=${0##*/} include_i="$@" include_t=""
+[ ${#1} -ne 0 ] || { [ "$include_o" = "include" ] || [ "$include_o" = "sh" ] && { infsh ~/code/include 3 20 ; return ;} || : ;}
+read include_p < /proc/$$/comm
+$include_l || include_log 96 IN
+[ $# -ne 0 ] || return
+for include_v in $@ ; do
+	tipo $include_v ; include_t=$?
+	[ $include_t -eq 0 ] && { # Incluido
+		$include_l || include_log 93 FUN
+	} || { # No incluido
+		[ $include_o = $include_v -o $include_t = 2 ] && { # no existe
+			$include_l || include_log "47;91" NOT
+		} || { # incluir
+			. ~/code/$include_v ;
+			$include_l || include_log 92 INC -
+			include_c=$((include_c+1)) ; [ $include_c -lt 20 ] || { read -p "INCLUDE>Loco - Se saldra del shell" r ; exit ;}
+		}
+	}
+done
+}
+
+
+case ${0##*/} in
+	bash|sh|include) include $@ ;;
+	*) $include_l || include_log "44;94" COMM ${0##*/} ;;
+esac
+#

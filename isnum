@@ -1,0 +1,24 @@
+#!/bin/sh
+# oxr 2025
+# Indica si es un numero.
+#
+#	isnum esto
+#
+# Admite numeros con y sin signo, enteros y, decimales con y sin parte entera o decimal
+# nº +nº -nº nº.mº +nº.mº -nº.mº .nº +.nº -.nº nº. +nº. -nº.
+# Va a retornar 0(true) si es un numero
+# 2(error/false) si no es un numero y 1(false) si no se dio nada.
+#
+# [[ $1 =~ ^[+-]?[0-9]+([.][0-9]+)?$ ]] solo en bash. no en sh
+
+
+isnum(){
+[ $# -ne 0 ] || return 1
+local x=${1#[+-]}
+x=${x%.*}${x#*.}
+[ $x -eq $x ] 2>/dev/null
+return $?
+}
+
+[ ${0##*/} != isnum ] || isnum "$@"
+#

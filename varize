@@ -1,0 +1,97 @@
+#!/bin/sh
+# oxr 2025
+# Asigna a una o mas variables la salida de una orden o registros de un archivo;
+#  por linea y campo. Incluir '. varize' para que la asignacion surta efecto
+#
+# >    varize [-e] -a archivo [-l lº] [-n [cº [rº]]] [-m] var [var... [--]] orden
+#
+# '-a'  archivo del que leer, excluye 'orden' y viceversa
+# '-n'  Reparte por cºampos hasta rº, o asigna a variables declaradas si no rº.
+# ···    Si rº=0, habra reparto hasta el final; si rº, y hay resto, a la ultima.
+# '-l'  lee de esa linea. Si no -n, se repartira entre las variables.
+# ···    Si lº=0 sera la ultima linea.
+# '-m'  multiples variables '--' fin de variables
+# 'orden' no puede tener tuberias '|', ignora el entrecomillado
+# 'var' nombre de variable a asignar
+# '-e'  tambien muestra el valor
+#
+# >    varize -e -m p n -- pgrep -l -r R
+#
+# >    varize -l 2 u df -k --output=used /dir
+#
+# >    varize -e -n 2 3 -m x y -- echo no si tambien tampoco
+#
+# EN PROCESO - FUNCIONA - INCLUIR
+#
+
+
+[ $include_ctl ] || . include ; include enum # isnum - enum incluye isnum
+
+
+varize(){
+[ $# -gt 1 ] || { infsh ~/code/varize 3 22 ; return ;}
+local varize_v="" ec=true xx="" tp=/tmp/varize_$USER cp=0 ae=false cm="" ln="" rt=""
+# V nombres_variables - ec echo - ln linea - cp campo - tp tmp - rt resto/comodin - ae archivo|comodin - cm campos/comodin - xx comodin
+
+while [ ${#1} -ne 0 ] ; do case $1 in # opciones
+	-e) ec=false ; shift ;;
+	-m)	shift ; varize_v=$@ ; varize_v=${varize_v%% --*}
+		enum -c $varize_v ; shift $(($?+1))
+		set -- $@ ;	break ;;
+    -l) ln=$2 ; shift 2 ;;
+	-n) shift ; isnum $1 && {
+			cp=$1 ; shift ; ! isnum $1 || { rt=$1 ; shift ;}
+		} || cp=1 ;;
+	-a) cp "$2" $tp ; ae=true ; shift 2 ;;
+	*) varize_v=$1 ; shift ; break ;;
+esac ; done
+
+$ae || "$@" > $tp # ejecucion orden
+
+[ ${#ln} -eq 0 ] || { # linea
+	[ $ln -eq 0 ] && { # ultima linea
+		while read ae ; do cm=$xx xx=$ae ; done < $tp
+		[ ${#xx} -eq 0 ] && ln=$cm || ln=$xx
+	} || { # tal linea
+		enum cm $ln
+		for xx in $cm ; do read ln ; done < $tp
+	}
+	echo "$ln" > $tp
+}
+
+[ $cp -eq 0 ] || { # campos
+	read ln < $tp
+	enum -c $ln
+	[ $? -lt $cp ] && { # campo inexistente
+		eval unset $varize_v # puede dar el valor que tenia antes
+		return
+	} || { # primer campo
+		cm="" # portara el resultado
+		enum ae $((cp-1))
+		for xx in $ae ; do cm=$cm'* ' ; done
+		cm="${ln#$cm}"
+		[ ${#rt} -ne 0 ] || { # por variables
+				enum -c $varize_v ;
+				rt=$((($?+cp)-1)) ;
+		}  # ultimo campo
+		enum -c $ln
+		enum ae $(($?-rt))
+		rt=""
+		for xx in $ae ; do rt=$rt' *' ; done
+		cm="${cm%$rt}"
+		echo "$cm" > $tp
+	}
+}
+
+eval read $varize_v < $tp # asignacion a variables
+
+$ec || { # echo
+	for xx in $varize_v ; do eval cm="\$$xx"
+		echo "$cm" ;
+	done
+}
+}
+
+
+[ ${0##*/} != varize ] || varize $@
+#

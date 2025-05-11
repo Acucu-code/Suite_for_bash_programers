@@ -1,0 +1,123 @@
+#!/bin/sh
+# oxr 2025
+# Da estilo, elimina ,reemplaza o cuenta ocurrencias en un texto
+#
+# >    tize [-e] [-s SEP] [-C] [-v nm] [-a archivo] ···
+# ···   [-n]|[[-c nº -f nº] [-b] [-p] [-u]] ···
+# ···    [-q] objetivo [-r reemplazo] [SEP nueva instancia...] [--] SEP texto
+#
+# Opciones generales:
+# '-s'    SEParador de instancias, '/' por defecto. Antes que -a
+# '-C'    cuenta las coincidencias
+# '-v'    nombre de variable a asignar el resultado
+# '-a'    lee de archivo. Separador de archivo e instancia deben ser distintos.
+# '-e'    'echo' al final.
+# Opciones de instancia:
+# '-c|-f' formato de color y fondo: -c (0-7 ó mas fondo 00-77) -f (0-7).
+# '-b'    no bold.
+# '-p'    parpadeante.
+# '-u'    subrayado
+# '-n'    sin estilo
+# '-q'    quita ocurrencias.
+# '-r'    reemplaza ocurrencias.
+# '--'    fin de opciones, en caso de ser necesario
+#
+# Para la asignacion a variable, incluir: '. tize'
+# En 'texto', si no '-n', se colorearan todas las ocurrencias de 'objetivo' o
+#  'reemplazo'. Si no se da 'color' o 'fondo' estos seran verde y normal.
+# Si va a colorear un solo caracter pongalo en la primera instancia, queriendo
+#  colorear mas, puede fallar, por los caracteres de las secuencias de escape
+# Los abarcadores '[',']','{' y '}' cada uno en una instancia y en ese orden
+# Los caracteres especiales como '() <>' entrecomillarlos "(" o escaparlos ⧵(
+#
+# EN PROCESO - FUNCIONA - INCLUIBLE '. tize'.
+#
+
+
+# PATH=~/code:/bin
+[ $include_ctl ] || . include ; include sep
+
+
+tize_fun(){
+local rs="" ob="" rt="" rg="" cl=";92" fd=";49" bd=1 ex="" cs=0 ec='[' rp=false rx=0 nc=false ct=0 md=""
+# rs resultado - ob objetivo - rt resto - rg registro - cl color - fd fondo - bd bold - ex expandir - md modificacion
+# cs contador_seguridad - ec escape_caracter - rp reemplazar - rx resto_exp - nc no colorear - ct contador
+
+while [ ${#2} -ne 0 ] ; do # Estilo - si no hay $2 no es una opcion
+	case $1 in
+		-c) [ ${#2} = 1 ] && cl=";9"$2 || cl=";9"${2%?} fd=";4"${2#?} ; shift 2 ;;
+		-f) fd=";4"$2 ; shift 2 ;;
+		-p) fd=$fd";5" ; shift ;;
+		-b) bd=0 ; shift ;;
+		-u) fd=$fd";4" ; shift ;;
+		-n) $nc && nc=false || nc=true ; shift ;;
+		--) shift ; break ;;
+		*) break ;;
+	esac
+done
+
+[ ${#tize_sp} -ne 0 ] || { $nc && tize_tx=$@ || tize_tx=$ec$bd$cl$fd"m"$@$ec"0m" ; return ;} # texto simple
+
+ob=$@ ob=${ob#-q } rt=$tize_tx rx=$tize_tx cs=${#tize_tx}
+
+[ "$ob" != "${ob#* -r }" ] && { rp=true md=${ob##* -r } ob=${ob%% -r *} # con reemplazo
+} || { [ "$ob" = "${ob#* -r}" ] || rp=true md='\b' ob=${ob%% -r} ;} #sin reemplazo '' ' ' y nada
+[ "$ob" != "${ob%\?*}" ] || [ "$ob" != "${ob%\**}" ] && ex=$ob # para expansion
+
+while [ ${#rt} -ne 0 ] ; do #aplicacion
+	[ ${#ex} -eq 0 ] || ob=${rx#${rx%%$ex*}} ob=${ob%${ob##$ex}} rx=${rx#*"$ob"} # expansion objetivo
+	[ ${#ob} -ne 0 ] && ct=$((ct+1)) || { [ ${#ex} -gt 0 ] && rs=$rs$rx || rs=$rs$rt ; break ;} # no mas coincidencias
+	[ "$1" = "-q" ] || { # reemplazar / colorear
+		$rp && { $nc || md=$ec$bd$cl$fd"m"$md$ec"0m" ;} || { $nc && md=$ob || md=$ec$bd$cl$fd"m"$ob$ec"0m" ;}
+	}
+	[ "${rt#$ob}" != "$rt" ] || { # resto no comienza con objetivo
+		rg=$rg${rt%%$ob*} rs=$rs${rt%%"$ob"*} # añade texto hasta objetivo
+		[ "$rg" != "$tize_tx" ] || { ct=$((ct-1)) ; break ;} # todo leido
+	}
+	rg=$rg$ob rs=$rs$md rt=${rt#*$ob} # añade objetivo y actualiza restante
+	cs=$((cs-1)) ; [ $cs -ne -1 ] || { echo "TIZE>Fuera de control" ; break ;} # ERROR
+done
+
+$tize_ct && tize_tx=$ct || tize_tx="$rs"
+}
+
+
+tize(){
+local cm="" dr="$PWD" ef=true ae="" vn="" sl='
+'
+# cm comodin - dr dir_previo - ef no_echo_final - ae archivo_entrada - vn variable_destino - sl salto_de_linea
+tize_sp="/" tize_tx="" tize_ct=false # global
+# sp separador - tx texto - ct contar
+
+while [ ${#1} -ne 0 ] ; do case $1 in
+	-a) while read cm ; do ae="$ae$cm$sl" ; done < "$2" ; shift 2 ; ae=${ae%$sl} ; set -- "$@ $tize_sp $ae" ;;
+	-e) ef=false ; shift ;;
+	-s) tize_sp="$2" ; shift 2 ;;
+	-v) vn="$2" ; shift 2 ;;
+	-C) tize_ct=true ; shift ;;
+	*) break ;;
+esac ; done
+
+[ $# -ne 0 ] || { infsh ~/code/tize 3 31 ; return ;}
+cd /tmp/vacio
+cm=$@ tize_tx=${cm##* $tize_sp } # texto
+
+[ "$cm" = "$tize_tx" ] && { tize_sp="" ; tize_fun $tize_tx ;} || {  # <-texto simple
+	set -- ${cm% $tize_sp *} # Quita ultimo separador y el texto
+	sep -s $tize_sp -O 'tize_fun $sep_C' $@
+}
+
+cd "$dr"
+[ ${#vn} -ne 0 ] && eval $vn="'$tize_tx'" || {
+	[ ${#BASH} -ne 0 ] && echo -e -n "$tize_tx" || echo -n "$tize_tx"
+}
+$ef || echo
+}
+
+
+# Evitar conflictos entre corchetes/comodines y nombres de archivo: ver shead
+mkdir -m -w -p /tmp/vacio
+
+
+[ ${0##*/} != tize ] || tize "$@"
+#

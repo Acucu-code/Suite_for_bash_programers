@@ -1,0 +1,28 @@
+#!/bin/sh
+# oxr 2025
+# Retorna si una orden es una funcion o no:
+#
+#	tipo orden && ... || ...
+#
+# INCLUIR
+
+
+tipo(){
+local tipo_t="" tipo_c=/tmp/tipo_$USER tipo_x=""
+case $1 in
+-e) shift ; [ ${#BASH} -ne 0 ] && type -t $@ || type $@ ;;
+"") infsh ~/code/tipo 2 4 ;;
+*) type $1 > $tipo_c 2>/dev/null ; tipo_x=$?
+	[ $tipo_x != 2 ] || return 2
+	read tipo_t < $tipo_c
+	[ "${tipo_t%/*}" = "$tipo_t" ] && {
+		[ $tipo_x = 1 ] && return 2 || return 0
+	} || {
+		[ $tipo_x = 1 ] && return 2 || return 1
+	} ;;
+esac
+}
+
+
+[ ${0##*/} != tipo ] || echo "tipo solo funciona si es incluido '. tipo'"
+#

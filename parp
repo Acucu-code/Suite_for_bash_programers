@@ -1,0 +1,230 @@
+#!/bin/sh
+# oxr 2025 - PARP V4
+# Generador de texto posicionable, con estilos y repeticiones. Admite multiples
+# instancias e inclusion de archivos de instancias y de secuencias de escape.
+#
+#	parp [-l] [-s SEP] [opciones] [--] Texto [SEP nueva instancia [SEP ...]]
+#
+# Parp acepta multiples opciones, con las formas:
+# (S)imbolo: S S+ S- S= SS
+# S SS Opciones directas: [¿ ! ¡ ¡¡ ç ^ v + - , ,, $ . º = : % _ __ @ --]
+# S+ S- S= SS Para fijar un valor: [ç+ ç= ^+ v+ ++ +- ,+ ,- ,= +$ -$ ^^ vv]
+# (-L)etra: Definir espaciado: [-z -w -W] Log: [-l] Incluir valor: [-s -c -f -e -r -p -t -a -v]
+#
+# PANTALLA: ! invierte_color ¿ revierte ¡ borra ¡¡ y buffer ¡- borra_cursor_arriba ¡+ abajo
+# CURSOR: ç inicio [ç= filaº columnaº] [ç+ columnaº] ^ [^+ arribaº] v [v+ abajoº] + [++ adelanteº] - [+- atrasº]
+# SALTOS: ,, ahora , final [,+ lineasº] [,- lineasº] [,= lineaº] $ tabulacion [+$ tabsº] [-$ tabsº] [^^ scrollº] [vv scrollº]
+# ESTILO: = grueso_normal º brillo_normal . apagado : parpadeante % inverso
+# ESTILO: _ subrayado __ subrayado_doble @ cursiva -c[(0-7) color (00-77) color/fondo] -f (0-7) fondo
+# FACILIDAD: Repetir [-e espaciosº] [-r nº caracte(r)]  [-p nº palabras --] Log [-l]
+# FACILIDAD: Incluir [-t palabras --] [-a archivo_instancias] [-v archivo_escapes]
+# FACILIDAD: Separar: Instancias [-s SEP] Espaciar: Si [-w] No [-z] Extra [-W] Fin_opciones [--]
+#
+# Los componentes de una instancia comparten estilo, para otro estilo otra instancia.
+# Las opciones [-z -w -W] trascienden instancias.
+# Las opciones [-e -r -p -t -a -v] se pueden repetir en la misma instancia.
+# El SEParador de instancias por defecto es '/'
+#
+# El Log '/tmp/parp.log' de darse la opcion '-l', contiene la salida del programa,
+# 	utilizable para crear archivos de instancias y de escapes.
+#	Las instancias se pueden editar facilmente. Y las secuencias de escape se
+#   pueden usar directamente con 'cat'.
+#
+# EN PROCESO - FUNCIONA - INCLUIBLE EN OTROS 	SCRIPTS '. parp'
+#
+# FUNCIONES
+# parp - Recibe la entrada ,la envia a parp_ins e incia el log. Al fin  Musetra
+#	el resultado y registra en el log las instancias y las secuencias de escape.
+#	No gestiona las instancias al haber llamadas a su gestion desde parp_fun.
+#
+# parp_ins - Gestiona las instancias y se las envia a parp_fun, al mismo tiempo
+#	actualiza el separador y va acumulando el registro de instancias..
+#
+# parp_fun - Analiza cada instancia recibida, transformandola en secuencias de
+#	escape que son acumulandas para su posterior salida.
+#
+# PROBLEMAS:
+#
+# $I llamada registro ,parece no tener utilidad ya.
+# Registro de instancias: En una instancia con varios conponentes, inclusion de
+#	texto, archivos, etc... los textos no son registrados en su posicion. Aunque
+#	la salida es correcta la instancia completa es pasada a parp_fun y como tal
+#	queda registrada .Habria que registrar los textos al ser aplicados en parp_fun.
+#	Ademas si se incluye en bash '. parp' las secuencias de escape son literales
+# Al incluir parp en bash para evitar la literalidad uso printf pero:
+# 	printf "$R" no interpreta los escapes y no acepta '%' en $R
+# 	printf %b "$R" muestra los separadores. ¿ Estan los separadores en "$R" ?
+# Revisar utilidad de ç ç+ ç= ,y cambiar caracter en $ +$ -$ revisar
+# Problema salto de linea no esperado en check solucionado para bash, script e
+# 	inclusion en bash; persiste al incluirlo en shell sh, pero eso no es necesario.
+#
+# OTRAS SECUENCIAS:
+# '\e[?6n' devuelve la posicion del cursor
+# '\e[r' crea una region con las dimesiones de la pantalla: newly-created
+# 	region. The new region will now define the bounds of all scroll and
+# 	cursor motion operations -- \e[ Pn1 ; Pn2 ; Pn3 ; Pn4 r  top, bottom, left and right
+# '\e[s' '\e[u' guarda restaura posicion del cursor
+# '\e[ altura%;ancho% B dimension de las fuentes - NO VA
+# esc[\ ST String terminator
+# echo -e '\e[18t' devuelve dimensiones pantalla en caracteres - NO PUEDO PASARLO A VAR
+#' \e[8;20;80t' cambia dimensiones pantalla en caracteres
+#
+#
+#
+#
+#
+#
+#
+
+
+PATH=~/code:/bin
+[ $include_ctl ] || . include ; include sep enum
+
+
+parp_fun(){ # APLICACION
+local b="1" e="" r="" p="" c="9" f="4" i="" n=false x=false z=false y="" A='[' t=""
+# b bold - e ops_estilo - p ops_pantalla - r ops_resto - c color - f fondo - A escape
+# i comodin - n salto_final? - x fin_ops? - y comodin|inicio_esc - z estilo?|fin_esc - t texto
+while [ $# -ne 0 ] ; do
+	case $1 in
+# PANTALLA
+		("!") p=$p$A'?5h' ; shift ;; # pantalla inverso
+		("¿") p=$p$A'?5l' ; shift ;; # pantalla normal
+		("¡") p=$p$A'2J' ; shift ;; ("¡¡") p=$p'\ec' ; shift ;; # borrar pantalla / y buffer
+		("¡-") p=$p$A'1J' ; shift ;; ("¡+") p=$p$A'0J' ; shift ;; # borrar pantalla arriba / abajo ,del cursor
+# CURSOR
+		("ç") r=$r$A'H' ; shift ;; # Posicion del cursor 1,1
+		("ç+") r=$r$A$2'G' ; shift 2 ;; # columna
+		("ç=") r=$r$A$2';'$3'H' ; shift 3 ;; # x,y ,tambien \e[x;yf
+		("^") r=$r'\eM' ; shift ;; ("^+") r=$r$A$2'A' ; shift 2 ;; # arriba
+		("v") r=$r'\eD' ; shift ;; ("v+") r=$r$A$2'B' ; shift 2 ;; # abajo
+		("-") r=$r'\b' ; shift ;; ("+-") [ "$2" = 0 ] || r=$r$A$2'D' ; shift 2 ;; # atras
+		("+") r=$r' ' ; shift ;; ("++") r=$r$A$(($2-1))'C' ; shift 2 ;; #adelante
+# SALTOS
+		(",") n=true ; shift ;; (",,") r=$r'\n' ; shift ;; # de linea final / ahora
+		(",+") r=$r$A$2'E' ; shift 2 ;; (",-") r=$r$A$2'F' ; shift 2 ;; (",=") r=$r$A$2'd' ; shift 2 ;;
+		("$") r=$r'\t' ; shift ;; ("+$") r=$r$A$2'I' ; shift 2 ;; ("-$") r=$r$A$2'Z' ; shift 2 ;; # tabs
+		("^^") r=$r$A$2'T' ; shift 2 ;; ("vv") r=$r$A$2'S' ; shift 2 ;; # scroll
+# ESTILO
+		("=") b="0" z=true ; shift ;; # grueso normal
+		("º") c="3" b="0" z=true ; shift ;; # brillo normal ,si se da -c
+		(".") e=$e";2" ; shift ;; # brillo apagado
+		(":") e=$e";5" ; shift ;; # parpadeante
+		("%") e=$e";7" ; shift ;; # inverso
+		("_") e=$e";4" ; shift ;; # subrayado
+		("__") e=$e";21" ; shift ;; # subrayado doble
+		("@") e=$e";3" ; shift ;; # cursiva
+		("-c") [ ${#2} = 1 ] && e=$e";$c$2" || e=$e";$c${2%?};$f${2#?}" ; shift 2 ;; # color 0-9 - color/fondo 00-99
+		("-f") e=$e";$f$2" ; shift 2 ;; # fondo 0-9
+# FACILIDADES
+
+		("-t"|"-p") [ $1 = "-t" ] && { y=1 ; shift ; } || { y=$2 ; shift 2 ; } # insertar texto/repetir palabras
+			z=$@ i=${z%% --*} z=true ; enum -c $i ; shift $(($?+1))
+			enum y $y ; for y in $y ; do r=$r$i$parp_e ; done
+		;;
+		("-r") z=true ; r=$r$3$A$(($2-1))'b' ; shift 3 ;; # rep caracter
+		("-e") z=true ; r=$r' '$A$(($2-1))'b' ; shift 2 ;; # rep espacio
+		("-a") read i < $2 ; shift 2 # incluir archivo de instancias
+			[ ${#p} -ne 0 ] && parp_r=$parp_r$p p=""
+			[ "$e" -o "$r" ] && parp_r=$parp_r$A$b$e'm'$r$A'0m' r="" e=""
+			y=$parp_s ; parp_ins $i
+			[ "$parp_s" = "$y" ] || { parp_s=$y ; $parp_l && parp_i=$parp_i"-s $parp_s " ; } # Actualizar separador
+		;;
+		("-v") while read i ; do r="$r$i\n" ; done < $2 ; r=${r%\\n} ; shift 2 ;; # incluir archivo de secuencias de escape
+		("-l") shift ; parp_l=true ;; # registro
+		("-z") shift ; parp_e="" ;; # sin espaciado
+		("-w") shift ; parp_e=" " ;; # espaciado
+		("-W") shift ; parp_x=true ;; # espaciado extra por compatibilidad antiguos archivos *.parp
+		("--") shift ; x=true ;; # final opciones
+		(*) x=true z=true ;; # Texto
+	esac
+	$x && break
+done
+# RESULTADO
+$n && n='\n' || n=""
+[ ${#e} -ne 0 ] && z=true
+$z && y=$A$b$e'm' z=$A'0m' || y="" z=""
+$parp_x && parp_r=$parp_r$p$y$r$@$parp_e$z$n || parp_r=$parp_r$p$y$r$@$z$n
+t="$@" # solucionar problema de salto de linea en check
+}
+
+
+parp_ins(){ # GESTION DE INSTANCIAS
+# local i="" c="" s=""
+# i instancia - c comodin - s separador_nuevo
+
+sep -s $parp_s -O '$parp_l && parp_i=$parp_i$sep_C" $parp_s " ; parp_fun $sep_C ; $parp_x || parp_r=$parp_r$parp_e' "$@"
+
+# while : ; do
+	# [ "$1" = -s ] && {
+		# s=" $2 "
+		# shift 2
+		# [ $S = $s ] || { S=$s ; $L && I=$I"-s$S" ; } # Actualizar separador
+	# }
+	# c=$@ i=${c%%$S*}
+	# enum -c $i ; c=$(($?+1)) # incluido el separador
+	# $L && I=$I$i$S # Registro instancias
+	# parp_fun $i
+	# $W || R=$R$E
+	# [ $c -lt $# ] && shift $c || break
+# done
+## read -p"${#R}" w
+}
+
+
+parp_inf(){ # AYUDA
+	infsh ~/code/parp 3 31
+	parp -v parp/paleta.esc
+	# local c="" b="" r="" i="" f="" x=""
+	# for r in ". º" ". =" "." "º" "=" ""; do # PALETA DE COLORES
+		# for i in 0 1 2 3 4 5 6 7 ; do
+			# [ $i = 0 ] && f="-f 7 Color" || f=""
+			# [ $i -lt 2 ] && b=$b" + "
+ 			# b="$b$r -c $i $f $i / "
+		# done
+		# for i in 0 1 2 3 4 5 6 7 ; do
+			# c="" x=""
+			# [ $i = 7 ] && c="$r -c 4" || c="$r -c 7"
+			# [ $i = 0 ] && x="Fondo"
+			# b="$b + $c -f $i $x $i / "
+		# done
+	# b="$b , + -c 4 -- $r / "
+	# done
+# echo $B $b > x.parp
+}
+
+
+parp(){ # INICIO
+local r=/tmp/parp.log p=${0##*/} e=""
+# r Archivo_Registro - p Llamante - e echo -e
+parp_r="" parp_s="/" parp_e=" " parp_x=false parp_i="" parp_l=false
+# r Resultado - s Separador - e espaciado - x espaciado_extra - i Instancias_Registro - l Registrar?
+
+[ ${#BASH} -ne 0 ] && e="-e"
+
+[ $# -ne 0 ] && {
+	[ "$1" = "-l" ] && { # Registro cabecera
+		[ -e $r ] && rm $r
+		shift
+		parp_l=true
+ 		{ echo $e '\n'==============================
+		echo $e -n "$p - $proc_id - "
+		date +%x\ %R
+		echo $e '\n'ORDEN'\n'parp $@'\n\n' ;} >> $r
+	}
+	[ "$1" != "-s" ] || { parp_s="$2" ; shift 2 ;}
+	parp_ins "$@" # Lanzamiento
+	echo $e -n $parp_r # Resultado
+	$parp_l && echo $e INSTANCIAS'\n'$parp_i'\n\n\n'SECUENCIAS DE ESCAPE'\n'$parp_r >> $r || : # Registro
+} || parp_inf # echo ERROR
+
+# Problema salto de linea no esperado en check solucionado para bash, script e
+# 	inclusion en bash; persiste al incluirlo en shell sh, pero eso no es necesario.
+# sin incluir			incluido
+[ "$p" = "parp" ] || [ "$p" = "sh" -a "$t" != "$_" ] && echo
+
+}
+
+
+[ ${0##*/} != parp ] || parp "$@"
+#

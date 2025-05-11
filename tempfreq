@@ -1,0 +1,405 @@
+#!/bin/sh
+# oxr 2025
+# Controla la temperatura con cpufreq schedutil a traves de scaling_max_freq
+#
+# >    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ]
+#
+# 'intervalo' de refresco en segundos
+# 'repeticiones' nº repeticiones u ocurrencias para aplicar la modulacion
+# 'amplitud' rango de modulacion x ±100Mz
+# 'temperaturaº' a no sobrepasar en esceso
+# 'log' - informacion detallada true/false
+#
+# Esta pensado para ir en background, funcionando de manera automatica. Se pueden modificar las opciones desde la linea de
+# comandos, con opciones directas: 'q' termina el programa, 'l' muestra/oculta el log, 'i' muestra informacion 'h' la ayuda.
+# Puede ser gestionado manualmente con el programa tempfreq_log, 'aqui' traera la salida del programa.
+#
+# >    tempfreq 10 0 2 0 true - pone intervalo a 10” amplitud de modulacion a ⇐200 Mhz y activa el log, '0' no modifica.
+# >    tempfreq i - muestra informacion sobre el uso del programa, variables y log.
+#
+# A mas intervalo y mas repeticiones, mas estabilidad de frecuencia, pero mayor riesgo de sobrecalentamiento
+# A mayor amplitud, mas rapido el ajuste, pero menos margen de operacion
+#
+# options coretemp tjmax=53 en /etc/modprobe.d/thermal.conf
+# 'ta' amplitud de temperaturas NO se usa
+# revisar nombres de variables de un solo caracter
+# ordenar clases de modulacion por uso
+# añadir modulacion por uso de CPU - No se de donde sacar la informacion
+#
+# Aparte de en CONSTANTES ,OPCIONES PREDETERMINADAS y VARIABLES; otras estan
+# declaradas en CONTROL DE EJECUCION ,INFORMACION y marcadas con (VAR).
+# (ARCH) marca los archivos de trabajo.
+# FUNCIONADO - EN PROCESO - GESTIONABLE EN VIVO CON tempfreq_log, y este es lanzado automaticamente por tempfreq_pan <-- control
+
+
+PATH=~/code:/bin
+[ $include_ctl ] || . include ; include tize varize # isnum - varize incluye enum y este isnum
+
+
+tempfreq(){
+
+tty_ctl(){
+[ -e $tmp.tty ] && read tty < $tmp.tty || return 1
+[ -e "$tty" ] && return 0 || { >$tmp.tty ; return 1 ;}
+}
+
+
+salir(){ # SALIDA
+# trap - INT TERM QUIT KILL ABRT HUP
+	! tty_ctl || [ -e $tmp""_log.pid ] || tize $prg / "Saliendo de $prg"
+	rm $tmp.pid
+	#echo $c1\\t$c2\\t$c3\\t$c4\\t$c5\\t$c6 >> tempfreq.clases # registro de uso de clases
+	[ "$1" = "r" ] && { >$tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { echo ; exit ;}
+} #
+# trap salir INT TERM QUIT KILL ABRT HUP
+
+
+rdiv(){ # ASIGNA O MUESTRA EL VALOR DE UNA VARIABLE LEIDA DE UN ARCHIVO DIVIDIDA ENTRE MIL
+	local x
+	read x < $2
+	x=$((x/1000))
+	[ ${#3} -eq 0 ] && eval $1=$x || echo $x
+}
+
+
+info(){ # INFORMACION
+[ ${#1} -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x="$"$i ; echo $i=$x ; done ; return ;}
+[ ${#1} -ne 0 ] || {
+	for i in "OTROS_____" ib ia sl tty cpu pmc pmcn \
+			TEMPERATURA tmn tp t tmx tc tnmx ta td tf tfc \
+			FRECUENCIA fnmn fmn fmna fmd fp f fm fmx fmxa fmxf fnmx ff \
+			MODULACION mc mp mt mv ma mcr mfr mfa mf ; do
+		eval x="$"$i
+		[ ${#x} -ne 0 ] && inf="$inf\n$i=$x" || inf="$inf\n$i" # (VAR) variables y sus valores
+	done
+	tize -e -c 4 FRECUENCIA / -c 5 TEMPERATURA / -c 3 MODULACION / -c 2 OTROS / $inf
+	inf=$l l=true
+}
+	[ -e $tmp""_log.pid ] && {
+		tize -c 2 [ / -c 2 ] / \
+"——————————————————————————————————————
+[l]log/no [i]info []refrescar [q]salir
+[nº]tope [m]max [d]med [n]min [+|-]mod
+[o ...]opcines de tempfreq [*]ejecutar"
+	} || echo
+	echo ——————————————————————————————————————
+	echo "Temps     Freqs"
+	echo Previa, Actual, y de Control o Mediada
+	echo TP T TC │ FP F FM │
+	tize -e -c 3 ↺ / -c 7 ↷ / -c 4 ↕ / -c 1 ⊝ / │ ↺ Int ↷ Rep_\&_aply Mod_prop ↕⊝ Stop
+	tize -e -c 3 ☼ / -c 2 ☺ / -c 5 ⇑ / -c 6 ≊ / -c 6 ↑ / -c 2 ↓ / -c 3 ≮ / -c 4 = / -c 5 ≯ / T ☼ TC Cnt ⇑☺ Top │ F ≊ FM ↑↓≮=≯ Escal
+	echo ——————————————————————————————————————
+}>$tty
+
+
+{ # CONTROL DE EJECUCION
+	prg=${0##*/} # (VAR)
+	tmp="/tmp/$prg" # (VAR)
+	#donde se muestra la salida (ARCH) (VAR)
+	[ "$1" != "aqui" ] || echo > $tmp.tty
+	tty_ctl || varize -e tty /bin/tty > $tmp.tty
+	[ -e $tmp.pid ] && read x < $tmp.pid && [ -e /proc/$x ] && { # REENTRADA
+		echo $@ > $tmp.ops # (ARCH) opciones
+		read x < $tmp.slp ; [ -e "/proc/$x" ] && kill -TERM $x &>/dev/null
+		exit
+	} || { # 1ª ENTRADA
+		/bin/renice -n 19 -p $$ > /dev/null
+		# /bin/chrt -i -p 0 $$
+		echo $$ > $tmp.pid # (ARCH) pid del programa
+		dt=/sys/devices/platform/coretemp.0/hwmon/hwmon* # (VAR)
+		[ -e $tmp.tmn ] || rdiv tmn $dt/temp1_input - > $tmp.tmn # (VAR) (ARCH) temperatura minima dada
+		[ -e $tmp.rbt ] && { printf %b '\eM\eM'>$tty ; rm $tmp.rbt ;} # reboot
+	info -
+	}
+}
+
+
+{ # CONSTANTES
+	rdiv tnmx $dt/temp1_max # tª maxima
+	ff=100 # factor multiplicador de MHz
+	read x < /sys/devices/system/cpu/online # nº de cpu's
+	enum cpu $((${x#0-}+1))
+	dp="/sys/devices/system/cpu/cpufreq/policy"
+	rdiv fnmn $dp''0/cpuinfo_min_freq # frecuencia nominal minima
+	rdiv fnmx $dp''0/cpuinfo_max_freq # frecuencia nominal maxima
+	x=$((fnmx-fnmn))
+	fmd=$((fnmn+(x/2))) # frecuencia media
+	fmn=$((fnmn+(x/10))) # frecuencia minima
+}
+
+
+{ # OPCIONES PREDETERMINADAS
+	tc=$((tnmx-(tnmx/5))) # temperatura de control
+	ib=120 # intervalo base de refresco
+	mfr=2 # factor de repeticion
+	mf=2 # amplitud/factor de modulacion
+	l=false # log
+}
+
+
+ops(){ # ESTABLECE LAS OPCIONES
+ 	case $1 in
+		l) $l && l=false || l=true ;;
+		i) tty_ctl && info $@ ;;
+		h) infsh ~/code/tempfreq 3 21 ; exit ;;
+		q|r|m|d|n|+|-|=|"") : ;; # opciones en vivo con tempfreq_log
+		*) isnum "$1" && [ $1 -gt 0 ] && ib=$1 ia=$ib ;;
+	esac
+	[ $# -gt 1 ] && isnum $2 && [ $2 -gt 0 ] && mfr=$2 || :
+	[ $# -gt 2 ] && isnum $3 && [ $3 -gt 0 ] && mf=$3 || :
+	[ $# -gt 3 ] && isnum $4 && [ $4 -gt 0 ] && tc=$4 || :
+	[ $# -gt 4 ] && [ "$5" = true -o "$5" = false ] && l=$5 || :
+	tty_ctl && tize -e -c 7 "$prg: $ib˝  $mfr""↷  ±$((mf*ff))Mz  $tcº  $l">$tty
+mcr=0
+}
+ops $@ # OPCIONES EN LINEA DE ORDENES
+
+
+{ # VARIABLES
+# temperaturas
+	rdiv t $dt/temp1_input # temperatura actual
+	# tc temperatura de control
+	tp=$t # temperatura previa
+	read tmn < $tmp.tmn # temperatura minima
+	tmx=$t # temperatura maxima dada
+	ta=$((tc-tmn)) # amplitud de temperaturas
+	td=$((tc-t)) # diferencia de temperatura
+	tf=0 # factor de temperatura de control sobrepasada
+	tfc=0 # factor de temperatura cuenta
+# frecuencias
+	rdiv f $dp''0/scaling_cur_freq # frecuencia actual
+	# fnmx frecuencia nominal maxima
+	# fnmn frecuencia nominal minima
+	# fmn frecuencia minima conservadora
+	# fmd frecuencia media
+	fmna=$fmd # minima aplicable
+	fmxa=$fnmx # maxima aplicable
+	fmx=$fmd # maxima actual
+	fmxf=$fnmx # maxima forzada(sobrecalentamiento)
+	fm=$f # frecuencia modulada
+	fp=$f # previa
+	# ff factor multiplicador de MHz
+# modulacion
+	mt=0 # tipo de modulacion -2 -1 0 1 2
+	mp=0 # tipo previo de modulacion
+	mv=0 # variador de modulacion segun intervalo  y factor de temperatura
+	ma=0 # modulacion aplicable
+	mcr=1 # contador repeticion tipo de modulacion
+	# mf factor amplitud
+	# mfr factor de repeticion
+	mfa=$mfr # factor de repeticion aplicable
+	mc=0 # clase de modulacion
+	c0=0 c1=0 c2=0 c3=0 c4=0 c5=0 c6=0 # contadores de clase de modulacion
+	m="" # marca del sentido de la modulacion ↑ = ↓
+# otros
+	lt="" # log temperatura
+	lf="" # idem frecuencia
+	# ib intervalo de refresco base
+	ia=$ib # intervalo aplicable
+	sl="" # sleep ID
+	pmc=-1 # Programa Maximo uso de CPU
+	pmcn="" # Nombre ''
+	# l log
+	# prg nombre del programa
+	# dt directorio de temperaturas
+	# tmp archivos temporales
+	# inf variables y sus valores
+	# tty tty donde mostar la salida
+}
+
+
+max_freq(){ # ESTABLECE LA FRECUENCIA MAXIMA
+	for n in ${cpu} ; do
+		echo $(($1*1000)) > $dp$n/scaling_max_freq
+	done
+}
+max_freq $fmd
+
+
+while : ; do # RUTINA
+
+[ -s $tmp.ops ] && { # Opciones en $tmp.ops,tambien lo utiliza tempfreq_log.
+	read x z < $tmp.ops
+	> $tmp.ops
+	# printf %b '\eM'>$tty
+	case $x in
+		o) ops ${z} ;;
+		q) max_freq $fnmx ; salir ;;
+		i) tty_ctl && info $z ;;
+		l) $l && l=false || l=true ;;
+		r) salir r ;;
+		h) infsh ~/code/tempfreq 3 21 ;;
+		m) fmx=$fnmx fmxf=$fnmx fmxa=$fnmx fmna=$fmd ;;
+		d) fmx=$fmd fmxf=$fnmx fmxa=$fmd fmna=$fmn ;;
+		n) fmx=$fmn fmxf=$fmd fmxa=$fmd fmna=$fnmn ;;
+		+) fmna=$fmx fmx=$((fmx+100)) fmxf=$fnmx fmxa=$fmx ;;
+		-) fmxf=$fmx fmx=$((fmx-100)) fmxa=$fmx fmna=$fnmn ;;
+		=) [ ${#z} -ne 0 ] || z=$fmx ; fmx=$z fmxf=$z fmxa=$z fmna=$z ;;
+		""|aqui) : ;;
+		*) isnum $x && ops ${x} ${z} || ${x} ${z} ;;
+esac
+case $x in m|d|n|+|-|=) max_freq $fmx ;; esac
+mcr=0
+} || :
+
+
+{ # REVALORIZADO
+	rdiv t $dt/temp1_input
+	[ $t -ge $tnmx ] || [ $fmxa -eq $fmn -a $t -ge $tc -a $t -ge $tp ] && {
+		read x < $tmp.pid
+		[ $pmc -lt $x ] && x="Detenga procesos que usen mucha CPU." || {
+			kill -STOP $pmc
+			x="Se detuvo el programa $pmcn($pcm) que estaba sobrecalentando el sistema."
+		}
+		sndfile-play sonido/sonidos/trin.wav>/dev/null
+		xterm -fc 6 -T '!!!ALERTA DE TEMPERATURA!!!' -e sudo -p "$x Contraseña:" top -o %CPU -d 10
+	} || :
+	[ $t -lt $tmn ] && { tmn=$t ; echo $t > $tmp.tmn ;} || :
+	rdiv f $dp''0/scaling_cur_freq
+	fm=$(((fm+f-(tp-t))/2)) ; [ $fm -lt $fnmn ] && fm=$fnmn || :
+	[ $t -gt $tmx ] && tmx=$t
+	mt=0
+	mc=0
+	m=""
+}
+
+
+{ # MODULACION
+! $l || lt="" lf=""
+[ $t -lt $tc ] && { # tº menor que tº de control
+	mfa=$mfr
+	! $l || { [ $t -gt $tp ] && lt="TP<" || lt="TP≥" ; lt=$lt"T<TC" ;}
+	[ $tf -gt 0 ] && { # reciente sobrecalentamiento
+		tf=$((tf-mfa))
+		[ $tf -gt -1 ] || { #tf<0 comprueba uso CPU y si bajo recupera fnmx
+			tf=0 fm=$f
+			varize z pgrep -r R
+			[ ${#z} -ne 0 ] || fmxf=$fnmx pmc=-1 pmcn=""
+		}
+	} || { # ok
+		: # fmna=$fmd # oxr pru
+	}
+	[ $f -lt $fm ] && { # frecuencia bajando
+										! $l || lf=$lf"F<FM"
+		[ $f -lt $fp ] && {
+			mt=-2 mc=1 ;				! $l || lf="FP>"$lf
+		} || {
+			mt=-1 mc=2 ;				! $l || lf="FP≤"$lf
+		}
+	} || {
+		[ $f -gt $fm ] && { # frecuencia subiendo
+										! $l || lf=$lf"F>FM"
+			[ $tf -eq 0 ] && { # no subir mientras tª > tcº
+				[ $f -gt $fp ] && {
+					mt=2 mc=3 ;			! $l || lf="FP<"$lf
+				} || {
+					mt=1 mc=4 ;			! $l || lf="FP≥"$lf
+				}
+			} || :
+		} || :
+	}
+} || {  # tº igual o mayor que tº de control
+	[ $tf -gt 0 ] || { #tf==0 identifica programa alto uso CPU antes de aumentar
+
+		varize -m pmc pmcn -- pgrep -l -r R
+		# pmcn=${pmc#* } pmc=${pmc% *}
+
+	}
+	tf=$((tf+t-tc+1)) tfc=$((tfc+1)) mfa=1 fmna=$fmn fmxf=$fmx
+	! $l || lt=$lt"T≥TC"
+	# /bin/sndfile-play ~/sonido/sonidos/trin.wav	> /dev/null
+	[ $t -ge $tp ] && { # bajar frecuencia
+		mt=-2 mc=5 ;					! $l || lt="TP≤"$lt
+	} || {
+		mt=-1 mc=6 ;					! $l || lt="TP>"$lt
+	}
+}
+}
+
+
+{ # REAJUSTE
+# repeticiones
+	[ $mt -lt 0 -a $mp -lt 0 ] || [ $mt -gt 0 -a $mp -gt 0 ] && mcr=$((mcr+1)) || mcr=1
+# temperatura
+	ta=$((tc-tmn)) ; [ $ta -eq 0 ] && ta=1
+	td=$((tc-t)) ; [ $td -gt 0 ] || td=1
+# intervalo
+	[ $tf -gt 0 ] && {  # Mayor tª --> menor int.
+		ia=$((ib+(td*5)-(tf*10)))
+	} || ia=$ib #$((td*4))
+ 	[ $ia -gt 0 ] || ia=1
+# variador de modulacion
+	mv=$((ff/2*td/ta)) # mayor tª y mayor amplitud ,menor mod.
+	[ $tf -gt 0 ] && x=$(((tf+1)*2)) || x=1
+	mv=$((mv*$x)) # (tf+1) mayor tªfactor mayor mod.
+	[ $mv -lt 0 ] && mv=$((mv*-1)) # si se inicia con t>tc puede dar resultado negativo
+	mp=$mt ma=$((mt*mf*mv)) fmxa=$(((fmx+ma)/5*5))
+	! $l || {
+		[ $tf -gt 0 ] && x="1 ⊝" || x="4 ↕"
+		[ $ia -ne $ib ] && y="2 ⇊" || y="6 -b ↺" # ⌚⌛[ $tf -gt 0 ] &&
+		[ $mfa -ne $mfr ] && z="5 ∅" || z="7 -b ↷"
+		tize -v x -c $x
+		tize -v y -c $y
+		tize -v z -c $z
+		tize -v w -c 4 -b │
+		lt="$lt $w $lf $w $y$ia˝ $mcr$z$mfa $ma$x$tf\n"
+	}
+# limitador min-max
+	[ $fmx -eq $fmna -a $mt -lt 0 ] || [ $fmx -eq $fmxf -a $mt -gt 0 ] && { # Ya en el limite
+		! $l || {
+			[ $mt -lt 0 ] && m="3 ≮" || m="5 ≯" #≤ ≥ ≦  → ← ⇚ ⇛ ≮ ≯
+			}
+		fmxa=$fmx mt=0 mcr=0 # mc=0 No, hasta modificar orden de clases, por nº de usos
+	} || { # ¿ Al limite ?
+		[ $fmxa -le $fmna -a $mt -lt 0 ] && fmxa=$fmna || :
+		[ $fmxa -ge $fmxf -a $mt -gt 0 ] && fmxa=$fmxf || :
+	}
+}
+
+
+{ # APLICACION
+	[ $mt -ne 0 -a $mcr -ge $mfa ] && {
+		max_freq $fmxa
+		fmx=$fmxa mcr=0
+		! $l || {
+			[ $mt -gt 0 ] && m="6 ↑" || m="2 ↓"
+		}
+	} || fmxa=$fmx
+! $l || { [ ${#m} -ne 0 ] || m="4 =" ; tize -v m -c $m ;}
+}
+
+
+{ # RESULTADO
+	eval c$mc=$((c$mc+1))
+	$l && tty_ctl && {
+		# lt=$lt" C$mc ⊲ $c0∅ $c1 $c2 $c3 $c4 $c5 $c6\n"
+		[ $tfc -gt 0 ] && x="5 ⇑" || x="2 ☺"
+		[ $f -gt $fm ] && y=5 || y=2
+		[ $t -ge $tc ] && z="1 -p" || z=3
+		tize -v x -c $x
+		tize -v y -c $y ≊
+		tize -v z -c $z ☼
+		tize -v w -c 4 -b │
+		lt=$lt" $tº$z$tcº $tfc$x$tmxº $w $f$y$fm $m $fmxa""Mz\n"
+		tize -e -c 4 -b ——————————————————————————————————————
+		echo -n " $lt"
+	}>$tty
+	tp=$t fp=$f
+	[ ${#inf} -ne 0 ] && l=$inf inf=""
+}
+
+
+{ # PAUSA
+/bin/sleep $ia >/dev/null &
+sl=$!
+echo $sl >$tmp.slp # (ARCH) pid del sleep
+wait $sl 2>/dev/null # oculta mensaje terminated
+}
+
+done
+
+} # FIN
+
+
+tempfreq "$@"
+#

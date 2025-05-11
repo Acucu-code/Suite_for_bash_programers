@@ -1,0 +1,44 @@
+#!/bin/sh
+# oxr 2025
+# Enumera una cantidad en sus integrantes o cuenta las palabras de una frase
+# Debe incluirse '. enum' para que la asignacion a variable surta efecto
+#
+# >    enum [-e] [var] -c frase | var nº [cº]
+#
+# '-c'  devuelve el numero de palabras de la frase, 'var' es opcional
+# 'var' nombre de la variable a la que asignar el resultado
+# 'nº'  cantidad a enumerar
+# 'cº'  comienzo de la enumeracion, 0 por defecto
+# '-e'  tambien muestra el resultado
+#
+# >    enum x 3 ; for i in $x ; do ... ; done
+#
+# >    enum -c $frase ; shift $?
+#
+# EN PROCESO - FUNCIONA - INCLUIR
+
+
+[ $include_ctl ] || . include ; include isnum
+
+
+enum(){
+local enum_v="" enum_n=0 enum_c=0 enum_r="" enum_e=false
+[ $# -ne 0 ] || { infsh ~/code/enum 3 16 ; return ;}
+
+while [ ${#1} -ne 0 ] ; do case $1 in
+-e) enum_e=true ; shift ;;
+-c) shift ; $enum_e && echo -n $# ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$# ; return $# ;;
+ *) [ ${#enum_v} -eq 0 ] || break
+	enum_v=$1 ; shift ; isnum $1 && enum_n=$1 || continue ; shift
+	isnum $1 && { enum_n=$((enum_n+$1)) ; enum_c=$1 ; shift ;} ;;
+esac ; done
+
+while [ $enum_c -lt $enum_n ] ; do enum_r=$enum_r"$enum_c " enum_c=$((enum_c+1)) ; done
+echo $enum_r > /tmp/enum_$USER && eval read $enum_v < /tmp/enum_$USER || :
+$enum_e && echo -n $enum_r
+}
+
+
+[ ${0##*/} != enum ] || { [ ${#1} -ne 0 -a "$1" != -e ] && echo "enum solo asigna a variable si es incluido '. enum'\nSi solo quiere ver el resultado pruebe:\nenum -e $@" || enum "$@" ;}
+# echo "enum solo funciona si es incluido '. enum'"
+

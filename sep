@@ -1,0 +1,61 @@
+#!/bin/sh
+# oxr 2025
+# Separa instancias y puede ejecutar ordenes compuestas con cada una de ellas
+#
+# >    sep [-E|-L]|[-s|-S SEP] [-O 'orden..$sep_C..orden..'] -A archivo|instancias
+#
+# Opciones generales:
+# '-A' lee instancias de archivo
+# '-O' orden/es a ajecutar por cada instancia; de no darse, estas se mostraran.
+# '$sep_C' literal, es la variable que devuelve cada instancia
+# 'instancias' puede ser: $insts|instSEPinst...|o nada si se lee desde archivo
+# Opciones de instancia:
+# '-E' separador espacio ' ', por defecto
+# '-L' separador salto de linea
+# '-S' separador, sin espacios 'SEP'
+# '-s' separador, se tomara como entre espacios,' SEP '
+#
+# >    sep -s $S -O '$L && I=$I$sep_C$S ; parp_fun $sep_C ; $W || R=$R$E' "$@"
+#
+# >    sep -S - asd-123-qwe - -E asd 123 qwe -s + asd + 123 + qwe
+#
+# EN PROCESO - INCLUIBLE - FUNCIONANDO   ⧵∕ salto linea \012
+
+
+sep(){
+local sp=" " it="" sep_C="" or="" sl='
+'
+# c comodin - - separador - o orden - i instancias - sl salto_de_linea
+[ ${#1} -ne 0 ] || { infsh ~/code/sep 3 20 -c 2 -b sep_C ; return ;}
+
+until [ ${#1} -eq 0 ] ; do case $1 in # opciones generales
+	-A) while read sep_C ;do it="$it$sep_C$sl" ; done < "$2" ; it=${it%$sl} ; shift 2 ;;
+	-O) or="$2" ; shift 2 ;;
+	-s) sp=" $2 " ; shift 2 ;;
+	-S) sp="$2" ; shift 2 ;;
+	-L) sp="
+" ; shift ;;
+	-E) sp=" " ; shift ;;
+	*) [ ${#it} -ne 0 ] || it=$@ ; break ;;
+esac ; done
+
+until [ "$sep_C" = "$it" ] ; do # opciones de instancia
+	set -- $it
+	while [ ${#1} -ne 0 ] ; do case $1 in
+		-s) sp=" $2 " ; shift 2 ; it=$@ ;;
+		-S) sp="$2" ; shift 2 ; it=$@ ;;
+	-L) sp="
+" ; shift ; it=$@ ;;
+		-E) sp=" " ; shift ; it=$@ ;;
+		*) break ;;
+	esac ; done
+
+	sep_C=${it%%$sp*} it=${it#*$sp}
+
+	[ ${#or} -ne 0 ] && eval "$or" || echo $sep_C
+done
+}
+
+
+[ ${0##*/} != sep ] || sep "$@"
+#

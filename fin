@@ -1,0 +1,55 @@
+#!/bin/sh
+#oxr 2025
+# gestion de salida por tiempo o temperatura
+
+[ "$USER" != "root" ] && { su - root -c "exec $0 $*" ; exit ; }
+
+
+# vars a t g c r d
+
+PATH=$PATH:code
+[ $include_ctl ] || . include ; include varize tize # isnum - varize incluye enum y este isnum
+
+a="" t="" g="" c="" d="" r=""
+# a accion - t tiempo - g grados - c texto - d dirtemp - r read
+[ ${#1} -eq 0 ] || {
+while [ ${#1} -ne 0 ] ; do case $1 in
+-t) isnum $2 && { g=$2 && shift 2 ;} || { g=40 ; shift ;} ;;
+-p)a=poweroff ; break ;;
+-h)a=hibernate ; break ;;
+-s)a=sleep ; break ;;
+-r)a=reboot ; break ;;
+*) [ ${#t} -ne 0 ] && break || { isnum $1 && { t=$1 ; shift ;} || { tize -c 2 [ / -c 2 ] / opciones: [tº|-t tª] [ [-p]oweroff [-h]ibernate [-s]leep [-r]eboot ] ; return 1 ;} } ;;
+esac ; done
+}
+
+[ ${#a} -ne 0 ] || a=hibernate
+
+[ ${#g} -eq 0 ] && {
+	[ ${#t} -ne 0 ] || t=300
+	c="En $t segundos"
+} || {
+	varize d echo /sys/devices/platform/coretemp.0/hwmon/hwmon*
+	d=$d/temp1_input
+	read r < $d
+	r=$((r/1000)) ; unset $t
+	c="Cuando Tªactual($rº) sea $gº"
+}
+tize -c 76 $t / -c 6 $a / -c 2 [s / -c 2 ] / -c 17 $gº / -c 71 $rº / "$c $a. Esta seguro[s]"
+read c
+[ "$c" = "s" ] || exit 0
+
+[ ${#g} -ne 0 ] && {
+	until [ $r -le $g ] ; do
+		sleep 30
+		read r < $d
+		r=$((r/1000))
+		echo 'M[17G[1;97;41m'$rº'[0m'
+	done
+	echo "$a en 3 segundos"'[1;5m' ...'[0m'
+	sleep 3
+	echo 'M['$((${#a}+16))G ...'[0m'
+} || sleep $t
+systemctl start $a.target &
+return 0
+#

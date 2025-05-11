@@ -1,0 +1,229 @@
+#!/bin/sh
+# oxr 2025 SHEAD V2
+# Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
+# y definir el modo de salida. Puede actuar como  'cat' 'grep' 'head/tail'
+#
+# >    [|] shead [-a archivo] [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
+# ···   [-f nº|inicioº [finº]] [-p|-pp|-s|-ss] [-|!] [--] [[-c colorº] ···
+# ···    filtro [-r reemplazo]] [SEP nueva instancia [SEP ...]]
+#
+# Opciones generales:
+# '-a'       leera desde ese archivo sino de la salida standard con '|'
+# '-o'       salida a otro archivo, si '-m' todo el texto sera enviado
+# '-l'       mostrara el nº de linea
+# '-C'       solo devolvera el nº de resultados
+# '-S'       separador, por defecto es '/'
+# '-z'       no hara salto de linea
+# '-n'       sin estilo
+# '-f'       filtrara las nº ultimas lineas del archivo. Ultima opcion
+# 'inicio fin' lineas a examinar, todas por defecto. Ultima opcion
+# Opciones de instancia:
+# '-p|-s'    filtrara por prefijo o sufijo y actuara sobre ellos
+# '-pp|-ss'  idem pero actuara en toda la linea
+# '-'        no mostrara el filtro.
+# '!'        mostrara las lineas sin coincidencias.
+# '--'       fin de opciones, puede ser necesario si filtro es un numero.
+# '-c'       da color al filtro o su reemplazo, color[0-7] color/fondo[00-77]
+# '-b'       no bold
+# '-u'       subrayado
+# '-P'       parpadeante
+# 'filtro'   texto a encontrar.
+# '-r'       reemplazar.
+#
+# Por defecto se filtran todas las lineas y se resaltan las coincidencias.
+# Por 'pre/sufijo' se filtran las lineas con coincidencias, esto se puede usar
+# para filtrar por contenido con '-p *filtro' o '-s filtro*' que mostrara solo
+# las lineas coincidentes; no resaltara a menos que se indique color.
+#
+# EN PROCESO - FUNCIONANDO - INCLUIBLE EN OTROS SCRIPTS '. shead'
+#
+# Muestra una lista con algo de informacion sobre las funciones incluidas en el shell - no puedo meterlo en un alias y en un script hace referencia a lo incluido en el mismo
+# set | shead -s - "\ ()*" | tb sep -O '[ -e ~/code/$sep_C ] && { echo ___ $sep_C ___ ; shead -a ~/code/$sep_C 3 3 -p \# -r "\ " ;} || echo --- $sep_C --- pertenece a ${sep_C%_*}'
+#
+# GESTION MANUAL DE * ,reemplaza con ?[?...] - ya no hace falta
+# . enum
+# x=1234567
+#prefijo
+# y=*6?
+# [ "${y#"*"}" = "$y" ] || { enum c $((${#x}-(${#y}-1))) ; y=${y#"*"} ; for i in $c ; do y='?'$y ; done ;}
+# echo --"$y"--${x#$y}--
+#sufijo
+# y=?2*
+# [ "${y%"*"}" = "$y" ] || { enum c $((${#x}-(${#y}-1))) ; y=${y%"*"} ; for i in $c ; do y=$y'?' ; done ;}
+# echo --"$y"--${x%$y}--
+#
+
+
+# PATH=~/code:/bin
+[ $include_ctl ] || . include ; include tize isnum
+
+
+shead_fun(){
+local ln="" tr="" mt=true
+# ln nºlinea - tr texto_restante - mt mostrar
+[ ${#shead_ft} -eq 0 ] || { # filtrar
+	[ $shead_pt = I ] && { # Contenido
+		tr=${shead_tx##*$shead_ft}
+		[ ${#shead_rp} -ne 0 ] || {
+			[ "$shead_tx" != "$tr" ] && { # coincide
+				case $shead_md in
+				false) # mostrar
+						[ ${#shead_cl} -ne 0 ] || shead_cl="-c 2"
+						shead_nr=$((shead_nr+1))
+						tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft /-/ "$shead_tx" ;;
+				true) # no mostrar el filtro
+						shead_nr=$((shead_nr+1))
+						tize -v shead_tx -s /-/ $shead_ne -q $shead_ft /-/ "$shead_tx" ;;
+				  "") # no mostrar lineas coincidentes
+					# shead_nr=$((shead_nr+1))
+					$shead_sa && [ "$shead_ne" = "-n" ] || mt=false ;;
+				esac
+			} || { [ ${#shead_md} -ne 0 ] || shead_nr=$((shead_nr+1)) ;}
+		}
+	} || { # Prefijo/Sufijo
+		[ $shead_pt = P -o $shead_pt = PP ] && tr=${shead_tx##$shead_ft} || tr=${shead_tx%%$shead_ft}
+		[ ${#shead_md} -ne 0 -a "$shead_tx" != "$tr" ] && { # modos mostrar y no mostrar filtro
+			[ ${#shead_rp} -ne 0 ] || {
+				shead_nr=$((shead_nr+1))
+				$shead_md && {
+					[ $shead_pt = P -o $shead_pt = S ] && shead_tx=$tr || tize -v shead_tx -s /-/ $shead_ne -q $shead_ft /-/ "$shead_tx"
+				} || { # <--no mostrar filtro - #colorea filtro si se indica color, por defecto no
+					[ ${#shead_cl} -eq 0 ] || tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft /-/ "$shead_tx"
+				}
+			}
+		} || { # no mostrar lineas coincidentes - se mostraran lineas no coincidentes
+			[ ${#shead_md} -eq 0 -a "$shead_tx" = "$tr" ] || { # siempre que no sean true
+				[ ${#shead_md} -ne 0 ] || shead_nr=$((shead_nr+1))
+				$shead_sa && [ "$shead_ne" = "-n" ] || mt=false
+			}
+		}
+	}
+} # Sin filtro
+
+! $mt || { # aplicar
+# solo pasa si las 2 son false
+[ ${#shead_rp} -eq 0 ] || [ "$shead_tx" = "${shead_tx##*$shead_ft}" ] || { # reemplazar
+	[ ${#shead_cl} -ne 0 ] || { [ $shead_pt != I ] || shead_cl="-c 6" ;}
+	shead_nr=$((shead_nr+1))
+	[ $shead_pt = P -o $shead_pt = S ] && {
+		[ ${#shead_cl} -eq 0 ] || tize -v shead_rp $shead_cl $shead_rp
+# echo --$shead_rp--$tr--
+		[ $shead_pt = P ] && shead_tx=$shead_rp$tr || shead_tx=$tr$shead_rp
+	} || tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft -r $shead_rp /-/ "$shead_tx"
+}
+
+$shead_nm && ! $shead_mi && ln=$shead_ct"\t" || :
+
+shead_rs="$shead_rs$ln$shead_tx$shead_sl"
+}
+}
+
+
+shead(){
+local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/shead_$USER
+# dp directorio_previo - ae archivo - cm comodin - as archivo_salida - td todo - it instancia - sp separador - in inicial - ul ultima - at archivo_temporal
+shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0
+shead_sl='\n' shead_rp="" shead_cr=false shead_nr=0 shead_sa=false shead_ne="" shead_mi=false shead_cl=""
+# nm numerar - tx texto - ft filtro - rt resultado - pt parte - md modo - ct contador - sl salto_linea - rp reemplazo - dr devolver_resultados - nr nº_resultados - sa salida_a_archivo - nm numerar_lineas - mi multiinstancias - cl color - ne sin estilo
+[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 5 Ultima opcion ; return ;}
+
+while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
+	-a) ae=$2 ; [ "${ae#/}" != "$ae" ] || ae="$PWD/$ae" ; [ -e "$ae" ] || { echo "No existe $ae" ; return ;} ; shift 2 ;;
+	-o) shead_sa=true as=$2 ; shift 2 ;;
+	-l) shead_nm=true ; shift ;;
+	-z) shead_sl=" " ; shift ;;
+	-n) shead_ne="-n" ; shift ;;
+	-S) sp="$2" ; shift 2 ;;
+	-C) shead_cr=true shead_ne="-n" ; shift ;;
+	-f)	[ ${#ae} -ne 0 ] && {
+		while read shead_tx ; do ul=$((ul+1)) ; done < "$ae" ; in=$((ul+1-$2))
+		} || {
+			>$at
+			while read shead_tx ; do ul=$((ul+1)) ; echo $shead_tx >> $at ; done ; in=$((ul+1-$2))
+			ae=$at
+		}
+		shift 2 ;;
+	 *) [ $ul -ne 0 ] || for cm in in ul ; do
+			isnum $1 && { eval $cm=$1 ; shift ;} || { [ -e $1 ] && ae=$PWD/$1 ; break ;}
+		done ; break ;;
+esac ; done
+
+cd /tmp/vacio
+
+td=$@
+
+while : ; do #Gestion de instancias
+	it=${td%% $sp *} td=${td#$it $sp }
+    set -- $it
+#opciones de instancia
+	shead_cl=""
+	while [ $# -ne 0 ] ; do case "$1" in
+		!) shift; shead_md="" ;;
+		-) shift; shead_md=true ;;
+		-p) shift; shead_pt="P" ;;
+		-pp) shift; shead_pt="PP" ;;
+		-s) shift; shead_pt="S" ;;
+		-ss) shift; shead_pt="SS" ;;
+		-c) shead_cl="-c $2" ; shift 2 ;; #color
+		-P) shead_cl="$shead_cl -p" ; shift ;; #parpadeo
+		-u) shead_cl="$shead_cl -u" ; shift ;; #subrayado
+		-b) shead_cl="$shead_cl -b" ; shift ;; #no bold
+		--)shift;break;;
+		*)break;;
+	esac ; done
+#filtro
+	shead_ft=$@
+	[ "$shead_ft" != "${shead_ft#* -r }" ] && { #si reemplazar
+		shead_rp=${shead_ft##* -r } shead_ft=${shead_ft%% -r *} #shead_rp=$shead_ft" -r "$shead_rp
+	} || { #si reemplazar por nada
+		[ "$shead_ft" = "${shead_ft#* -r}" ] || shead_ft=${shead_ft%% -r} shead_rp='\b' #shead_rp=$shead_ft" -r "'\b'
+	}
+	[ $ul -ne 0 ] || ul=10000
+#Accion
+	[ ${#ae} -ne 0 ] && {
+	while read shead_tx ; do
+		shead_ct=$((shead_ct+1))
+		[ $shead_ct -ge $in ] || continue
+		shead_fun
+		[ $shead_ct -lt $ul ] || break
+	done < "$ae"
+	} || {
+	while read shead_tx ; do
+		shead_ct=$((shead_ct+1))
+		[ $shead_ct -ge $in ] || continue
+		shead_fun
+		[ $shead_ct -lt $ul ] || break
+	done
+	}
+
+[ "$td" != "$it" ] || break
+		ae=$at shead_mi=true shead_nr=0 shead_rp="" shead_pt="I" shead_md=false shead_ct=0 shead_ft=""
+		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" > "$ae" || echo -n "$shead_rs" > "$ae"
+		shead_rs=""
+done
+
+cd "$dp"
+
+$shead_sa && { # salida a archivo
+	$shead_cr && echo $shead_nr > "$as" || {
+		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" > "$as" || echo -n "$shead_rs" > "$as"
+	}
+} || { # salida a pantalla
+	$shead_cr && echo $shead_nr || {
+		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" || echo -n "$shead_rs"
+	}
+}
+}
+
+
+# Evitar conflictos entre corchetes/comodines y nombres de archivo:
+#	' [*nombre archivo monocaracter*] ' '?nam' 'nam?' '*nam' 'nam*'
+# que provocan al ser enviados a una funcion o programa, que reciben los nombres
+# de los archivos que hay en el directorio desde donde se lanzo la orden.
+# SOLUCION ACTUAL
+# Directorio de trabajo vacio
+mkdir -m -w -p /tmp/vacio
+
+
+[ ${0##*/} != shead ] || shead "$@"
+#

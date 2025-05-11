@@ -1,0 +1,33 @@
+#!/bin/sh
+# oxr 2025
+# Log de tempfreq con opciones de control de la frecuencia
+# Este script es llamado automaticamente por tempfreq_pan que a su vez es
+# incluido en control(un script del panel)
+
+
+xterm -T 'TempFreq Log' -fc 5 -geometry 38x3-0-0 -e sh -c '
+PATH=~/code:/bin
+. isnum
+tize -c 2 [ / -c 2 ] / "[l]log/no [i]info []refrescar [q]salir\n\
+[nº]tope [m]max [d]med [n]min [+|-]mod\n\
+[o ...]opcines de tempfreq [*]ejecutar"
+nm=/tmp/tempfreq tty=`/bin/tty` ; echo $tty > $nm.tty
+sleep 4
+[ -e $nm.pid ] && e=true || e=false
+case $e in
+true) tempfreq l &
+;;false) tempfreq 120 2 2 0 true &
+;;esac
+sleep 1 ; echo $$>$nm""_log.pid
+send(){ echo $1 > $nm.$2 ; kill -TERM $x ;}
+while : ; do read r
+[ ${#r} -ne 0 ] && isnum $r && r="= $r"
+read x < $nm.slp
+case ${r%% *} in
+o|l|i|r|m|d|n|+|-|=|"") send "$r" ops
+;;aqui) send $tty tty
+;;q) rm $nm""_log.pid ; send m ops ; $e || rm $nm.pid ; exit
+;;*) $r
+;;esac ; done
+' &
+#

@@ -1,0 +1,31 @@
+#!/bin/sh
+#oxr 2025
+# Da color a la cabecera de un script, por defecto da color a algunos caracteres
+# pero se pueden indicar otros objetivos
+#
+# >    infsh archivo inicio fin [[estilo] objetivo ∕ [estilo] objetivo ... ]
+#
+# 'archivo'    del que leer las
+# 'inicio fin' lineas a mostrar
+# 'estilo'     [-c (0-7 ó 00-77 para color/fondo)] [-b] bold [-p] parpadeo
+# 'objetivo'   a colorear. "Entrecomillar", o escapar caracteres especiales '⧵c'
+# '/'          separador de instancias. No puede haber barras aisladas en el
+# \\b               texto a mostar, dir/ y /dir valen
+#
+
+
+[ $include_ctl ] || . include ; include shead tb
+
+
+infsh(){
+[ ${#3} -eq 0 ] && { exec infsh ~/code/infsh 3 13 ; return ;}
+local a=$1 i=$2 f=$3 o=""
+shift 3
+[ ${#@} -ne 0 ] && o="$@ /"
+echo
+shead -n -a $a $i $f -p - \# | tb tize -c 3 "[" / -c 3 "]" / -c 2 \" / -c 2 "'" / -c 7 $ / -c 6 "º" / -c 6 "+" / -c 6 "-" / -c 6 "=" / -c 5 "<" / -c 5 ">" / -c 1 -b "{" / -c 1 -b "}" / -c 4 "(" / -c 4 ")" / -c 6 "|" / -c 2 "···" / -c 7 -b -u Opciones generales / -c 7 -b -u Opciones de instancia / -c 6 -b SEP / $o -c 6 "⧵" / -c 6 "∕" / -c 6 "/" /
+}
+
+
+[ ${0##*/} != infsh ] || infsh "$@"
+#
