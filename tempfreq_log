@@ -6,7 +6,7 @@
 
 
 xterm -T 'TempFreq Log' -fc 5 -geometry 38x3-0-0 -e sh -c '
-PATH=~/code:/bin
+PATH=$PATH:~/code
 . isnum
 tize -c 2 [ / -c 2 ] / "[l]log/no [i]info []refrescar [q]salir\n\
 [nº]tope [m]max [d]med [n]min [+|-]mod\n\

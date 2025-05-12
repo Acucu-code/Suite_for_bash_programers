@@ -9,7 +9,6 @@
 # La salida, se recoge con '$?' ,si>0 enter>1 cancelar>2 quitar>3
 
 
-PATH=~/code:/bin
 [ $include_ctl ] || . include ; include parp
 
 

@@ -77,7 +77,6 @@
 #
 
 
-PATH=~/code:/bin
 [ $include_ctl ] || . include ; include sep enum
 
 

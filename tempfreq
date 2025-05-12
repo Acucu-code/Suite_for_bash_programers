@@ -32,7 +32,6 @@
 # FUNCIONADO - EN PROCESO - GESTIONABLE EN VIVO CON tempfreq_log, y este es lanzado automaticamente por tempfreq_pan <-- control
 
 
-PATH=~/code:/bin
 [ $include_ctl ] || . include ; include tize varize # isnum - varize incluye enum y este isnum
 
 
