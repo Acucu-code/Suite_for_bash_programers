@@ -1,26 +1,42 @@
-This suite contains sh scripts designed to complement programming with commands that, except in rare and forced cases, only use sh built-in commands for:
+This suite contains 'sh' scripts designed to complement programming with
+commands that, except in rare and forced cases, only use internal commands.
 
-- managing script inclusions (include, tipo)
-- filtering text (shead)
-- coloring/styling text (parp, tize)
-- managing CPU frequency based on temperature (tempfreq, tempfreq_log)
-- passing command output to a variable (varize)
-- instance separator (sep)
-- delivering standard output to a script (tb)
-- number identifier (isnum)
-- number enumerator and word counter (enum)
-- terminating the system by time or temperature (fin)
-- displaying/coloring the information header of a script (infsh)
-- checking options (check)
+CONTENT:
 
-The script or bash, that include other scripts also include 'include' and 'tipo'. See 'include'.
+- Manage script inclusion (include, tipo)
+- Filter text (shead)
+- Colorize/style text (tize, parp)
+- Separate instances (sep)
+- Send standard output to a script (tb)
+- Pass command output to a variable (varize)
+- Identify numbers (isnum)
+- Enumerate numbers and count words (enum)
+- Check options (check)
+- Display a script's header information (infsh)
+- Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
+- Terminate the system by time or temperature (fin)
 
-It's recommended to keep these scripts in a folder included in your PATH, such as /home/user/code/*
+CONFIGURATION:
 
-PATH=$PATH:~/code
+1 - These scripts must be in the /home/$USER/code folder, since 'include',
+'tempFreq_log', and the calls from each script to 'infsh' refer to this folder.
 
-Some of these scripts only work if they are included in '. script'.
+2 - Run 'echo PATH=$PATH:~/code >> ~/.bashrc'.
 
-Some of these scripts use the /tmp/vacio folder to work with wildcards [*|?] without any problems.
+OTHERS:
 
-To obtain information about a command, it is usually enough to run it without options.
+This is a suite because most scripts depend on others. They use 'include', which
+manages inclusion. Some only work if included, either with 'include' or directly
+with '. script'.
+
+Some create the '/tmp/vacio' folder to operate with wildcards [*|?] without
+incident.
+
+The working files for some scripts, called 'script_$USER', will also be stored
+in '/tmp'.
+
+A call to '. include varize check infsh' will include all scripts except
+'tempfreq' and 'tempfreq_log', which opens a window.
+
+To obtain information about a command, it is usually enough to run it without
+any options.
