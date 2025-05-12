@@ -19,7 +19,7 @@ CONTENT:
 CONFIGURATION:
 
 1 - These scripts must be in the /home/$USER/code folder, since 'include',
-'tempFreq_log', and the calls from each script to 'infsh' refer to this folder.
+'tempfreq_log', and the calls from each script to 'infsh' refer to this folder.
 
 2 - Run 'echo PATH=$PATH:~/code >> ~/.bashrc'.
 
