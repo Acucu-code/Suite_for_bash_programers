@@ -127,8 +127,8 @@ shead_sl='\n' shead_rp="" shead_cr=false shead_nr=0 shead_sa=false shead_ne="" s
 [ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 5 Ultima opcion ; return ;}
 
 while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
-	-a)	path ae "$2" && shift 2 ;;
-	-o) shead_sa=true ; path as "$2" ; shift 2 ;;
+	-a)	path ae "$2" && shift 2 || { echo "$2 no existe" ; return ;} ;;
+	-o) shead_sa=true as="$2" ; shift 2 ;;
 	-l) shead_nm=true ; shift ;;
 	-z) shead_sl=" " ; shift ;;
 	-n) shead_ne="-n" ; shift ;;
