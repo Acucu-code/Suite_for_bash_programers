@@ -1,25 +1,30 @@
 #!/bin/sh
 #oxr 2025
-# gestion de salida por tiempo o temperatura
+# gestion de salida del sistema por tiempo o temperatura
+#
+# >    fin [[-+]t [nº]] [[-p]oweroff [-h]ibernate [-s]leep [-r]eboot]
+#
+# '-t|+t' cuando la temperatura baje o suba hasta nº, sino en nº o 300 segundos
+# '-[p|h|s|r]' accion a realizar, sino hibernate
+#
 
-[ "$USER" != "root" ] && { su - root -c "exec $0 $*" ; exit ; }
 
+[ "$USER" != "root" ] && { su - root -c "exec $0 $*" ; return ; }
 
-# vars a t g c r d
-
-PATH=$PATH:code
+PATH=$PATH:~/code
 [ $include_ctl ] || . include ; include varize tize # isnum - varize incluye enum y este isnum
 
-a="" t="" g="" c="" d="" r=""
-# a accion - t tiempo - g grados - c texto - d dirtemp - r read
+a="" t="" g="" c="" d="" r="" o="-le"
+# a accion - t tiempo - g grados - c texto - d dirtemp - r read - operador
 [ ${#1} -eq 0 ] || {
 while [ ${#1} -ne 0 ] ; do case $1 in
--t) isnum $2 && { g=$2 && shift 2 ;} || { g=40 ; shift ;} ;;
+-t) isnum $2 && { g=$2 ; shift 2 ;} || { g=40 ; shift ;} ;;
++t) isnum $2 && { g=$2 ; o="-ge" ; shift 2 ;} || { g=70 ; shift ;} ;;
 -p)a=poweroff ; break ;;
 -h)a=hibernate ; break ;;
 -s)a=sleep ; break ;;
 -r)a=reboot ; break ;;
-*) [ ${#t} -ne 0 ] && break || { isnum $1 && { t=$1 ; shift ;} || { tize -c 2 [ / -c 2 ] / opciones: [tº|-t tª] [ [-p]oweroff [-h]ibernate [-s]leep [-r]eboot ] ; return 1 ;} } ;;
+*) [ ${#t} -ne 0 ] && break || { isnum $1 && { t=$1 ; shift ;} || { infsh ~/code/fin 3 8 ; return 1 ;} } ;;
 esac ; done
 }
 
@@ -33,14 +38,16 @@ esac ; done
 	d=$d/temp1_input
 	read r < $d
 	r=$((r/1000)) ; unset $t
-	c="Cuando Tªactual($rº) sea $gº"
+	[ $o = "-le" ] && c="baje" || c="suba"
+	c="Cuando Tªactual($rº) $c a $gº"
 }
-tize -c 76 $t / -c 6 $a / -c 2 [s / -c 2 ] / -c 17 $gº / -c 71 $rº / "$c $a. Esta seguro[s]"
-read c
-[ "$c" = "s" ] || exit 0
+
+tize -e -c 76 $t / -c 6 $a / -c 2 [s / -c 2 ] / -c 17 $gº / -c 71 $rº / "$c $a." # Esta seguro[s]"
+# read c
+# [ "$c" = "s" ] || exit 0
 
 [ ${#g} -ne 0 ] && {
-	until [ $r -le $g ] ; do
+	until [ $r $o $g ] ; do
 		sleep 30
 		read r < $d
 		r=$((r/1000))
@@ -50,6 +57,7 @@ read c
 	sleep 3
 	echo 'M['$((${#a}+16))G ...'[0m'
 } || sleep $t
-systemctl start $a.target &
+fm false
+systemctl start $a.target
 return 0
 #

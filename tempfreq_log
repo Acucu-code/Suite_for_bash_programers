@@ -16,7 +16,7 @@ sleep 4
 [ -e $nm.pid ] && e=true || e=false
 case $e in
 true) tempfreq l &
-;;false) tempfreq 120 2 2 0 true &
+;;false) tempfreq 60 2 2 0 true &
 ;;esac
 sleep 1 ; echo $$>$nm""_log.pid
 send(){ echo $1 > $nm.$2 ; kill -TERM $x ;}
@@ -24,10 +24,10 @@ while : ; do read r
 [ ${#r} -ne 0 ] && isnum $r && r="= $r"
 read x < $nm.slp
 case ${r%% *} in
-o|l|i|r|m|d|n|+|-|=|"") send "$r" ops
-;;aqui) send $tty tty
-;;q) rm $nm""_log.pid ; send m ops ; $e || rm $nm.pid ; exit
-;;*) $r
-;;esac ; done
+o|l|i|r|m|d|n|+|-|=|"") send "$r" ops ;;
+aqui) send $tty tty ;;
+q) rm $nm""_log.pid ; send m ops ; $e || rm $nm.pid ; exit ;;
+*) $r ;;
+esac ; done
 ' &
 #

@@ -16,7 +16,7 @@ isnum(){
 [ $# -ne 0 ] || return 1
 local x=${1#[+-]}
 x=${x%.*}${x#*.}
-[ $x -eq $x ] 2>/dev/null
+[ $x -a $x -eq $x ] 2>/dev/null
 return $?
 }
 

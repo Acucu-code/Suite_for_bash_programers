@@ -54,7 +54,7 @@
 #
 
 
-[ $include_ctl ] || . include ; include tize isnum
+[ $include_ctl ] || . include ; include tize isnum path
 
 
 shead_fun(){
@@ -127,8 +127,8 @@ shead_sl='\n' shead_rp="" shead_cr=false shead_nr=0 shead_sa=false shead_ne="" s
 [ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 5 Ultima opcion ; return ;}
 
 while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
-	-a) ae=$2 ; [ "${ae#/}" != "$ae" ] || ae="$PWD/$ae" ; [ -e "$ae" ] || { echo "No existe $ae" ; return ;} ; shift 2 ;;
-	-o) shead_sa=true as=$2 ; shift 2 ;;
+	-a)	path ae "$2" && shift 2 ;;
+	-o) shead_sa=true ; path as "$2" ; shift 2 ;;
 	-l) shead_nm=true ; shift ;;
 	-z) shead_sl=" " ; shift ;;
 	-n) shead_ne="-n" ; shift ;;
@@ -143,7 +143,12 @@ while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
 		}
 		shift 2 ;;
 	 *) [ $ul -ne 0 ] || for cm in in ul ; do
-			isnum $1 && { eval $cm=$1 ; shift ;} || { [ -e $1 ] && ae=$PWD/$1 ; break ;}
+			isnum $1 && {
+				eval $cm=$1 ; shift
+			} || {
+				[ $e "$1" ] && path ae "$1" && shift
+				break
+			}
 		done ; break ;;
 esac ; done
 
