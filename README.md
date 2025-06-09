@@ -16,13 +16,15 @@ CONTENT:
 - Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
 - Terminate the system by time or temperature (fin)
 - Converts a partial path to absolute and assigns it to a variable (path)
-- 
+
+
 CONFIGURATION:
 
 1 - These scripts must be in the /home/$USER/code folder, since 'include',
-'tempfreq_log', and the calls from each script to 'infsh' refer to this folder.
+'tempfreq_log', and the calls from each script to 'infsh' refer to this folder:
 
-2 - Run 'echo PATH=$PATH:~/code >> ~/.bashrc'.
+  Run 'echo PATH=$PATH:~/code >> ~/.bashrc'.
+
 
 OTHERS:
 
