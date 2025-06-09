@@ -15,7 +15,8 @@ CONTENT:
 - Display a script's header information (infsh)
 - Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
 - Terminate the system by time or temperature (fin)
-
+- Converts a partial path to absolute and assigns it to a variable (path)
+- 
 CONFIGURATION:
 
 1 - These scripts must be in the /home/$USER/code folder, since 'include',
