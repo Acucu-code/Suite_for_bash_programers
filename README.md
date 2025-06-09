@@ -39,7 +39,7 @@ The working files for some scripts, called 'script_$USER', will also be stored
 in '/tmp'.
 
 A call to '. include varize check infsh' will include all scripts except
-'tempfreq' and 'tempfreq_log', which opens a window.
+'tempfreq' that is not includable, and 'tempfreq_log', which opens a window.
 
 To obtain information about a command, it is usually enough to run it without
 any options, currently only in Spanish.
