@@ -1,3 +1,9 @@
+LAST CHANGE:
+
+'path' Fixed bug with addresses with spaces 
+
+DESCRIPTION:
+
 This suite contains 'sh' scripts designed to complement programming with
 commands that, except in rare and forced cases, only use internal commands.
 
@@ -43,3 +49,7 @@ A call to '. include varize check infsh' will include all scripts except
 
 To obtain information about a command, it is usually enough to run it without
 any options, currently only in Spanish.
+
+LAST CHANGES:
+
+'path' Fixed bug with addresses with spaces 
