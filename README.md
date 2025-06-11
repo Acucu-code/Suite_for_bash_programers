@@ -1,7 +1,3 @@
-LAST CHANGE:
-
-'path' Fixed bug with addresses with spaces 
-
 DESCRIPTION:
 
 This suite contains 'sh' scripts designed to complement programming with
