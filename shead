@@ -3,7 +3,7 @@
 # Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
 # y definir el modo de salida. Puede actuar como  'cat' 'grep' 'head/tail'
 #
-# >    [|] shead [[-a] archivo] [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
+# >    [|] shead [-a archivo] [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
 # ···   [-f nº|inicioº [finº]] [-p|-pp|-s|-ss] [-|!] [--] [[-c colorº] ···
 # ···    filtro [-r reemplazo]] [SEP nueva instancia [SEP ...]]
 #
