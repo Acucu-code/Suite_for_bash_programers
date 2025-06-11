@@ -3,7 +3,7 @@
 # Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
 # y definir el modo de salida. Puede actuar como  'cat' 'grep' 'head/tail'
 #
-# >    [|] shead [-a archivo] [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
+# >    [|] shead [[-a] archivo] [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
 # ···   [-f nº|inicioº [finº]] [-p|-pp|-s|-ss] [-|!] [--] [[-c colorº] ···
 # ···    filtro [-r reemplazo]] [SEP nueva instancia [SEP ...]]
 #
@@ -15,28 +15,30 @@
 # '-S'       separador, por defecto es '/'
 # '-z'       no hara salto de linea
 # '-n'       sin estilo
-# '-f'       filtrara las nº ultimas lineas del archivo. Ultima opcion
-# 'inicio fin' lineas a examinar, todas por defecto. Ultima opcion
+# '-f'       filtrara las nº ultimas lineas del archivo. Ultima opcion general
+# 'inicio fin' lineas a examinar, todas por defecto. Ultima opcion general
 # Opciones de instancia:
 # '-p|-s'    filtrara por prefijo o sufijo y actuara sobre ellos
 # '-pp|-ss'  idem pero actuara en toda la linea
 # '-'        no mostrara el filtro.
-# '!'        mostrara las lineas sin coincidencias.
+# '!'        no mostrara las lineas con coincidencias.
 # '--'       fin de opciones, puede ser necesario si filtro es un numero.
 # '-c'       da color al filtro o su reemplazo, color[0-7] color/fondo[00-77]
 # '-b'       no bold
 # '-u'       subrayado
 # '-P'       parpadeante
-# 'filtro'   texto a encontrar.
+# 'filtro'   texto a encontrar. Entrecomillar si espacios o comodines
 # '-r'       reemplazar.
 #
-# Por defecto se filtran todas las lineas y se resaltan las coincidencias.
-# Por 'pre/sufijo' se filtran las lineas con coincidencias, esto se puede usar
+# Si no '-a' el archivo sera el primer argumento, y si 'inicio' se filtraran
+# esas primeras lineas.
+# Por defecto se muestran todas las lineas y se resaltan las coincidencias.
+# Por 'pre/sufijo' se muestran las lineas con coincidencias. Esto se puede usar
 # para filtrar por contenido con '-p *filtro' o '-s filtro*' que mostrara solo
 # las lineas coincidentes; no resaltara a menos que se indique color.
 #
 # EN PROCESO - FUNCIONANDO - INCLUIBLE EN OTROS SCRIPTS '. shead'
-#
+
 # Muestra una lista con algo de informacion sobre las funciones incluidas en el shell - no puedo meterlo en un alias y en un script hace referencia a lo incluido en el mismo
 # set | shead -s - "\ ()*" | tb sep -O '[ -e ~/code/$sep_C ] && { echo ___ $sep_C ___ ; shead -a ~/code/$sep_C 3 3 -p \# -r "\ " ;} || echo --- $sep_C --- pertenece a ${sep_C%_*}'
 #
@@ -84,10 +86,15 @@ local ln="" tr="" mt=true
 		[ ${#shead_md} -ne 0 -a "$shead_tx" != "$tr" ] && { # modos mostrar y no mostrar filtro
 			[ ${#shead_rp} -ne 0 ] || {
 				shead_nr=$((shead_nr+1))
-				$shead_md && {
+				$shead_md && { # no mostrar filtro
 					[ $shead_pt = P -o $shead_pt = S ] && shead_tx=$tr || tize -v shead_tx -s /-/ $shead_ne -q $shead_ft /-/ "$shead_tx"
-				} || { # <--no mostrar filtro - #colorea filtro si se indica color, por defecto no
-					[ ${#shead_cl} -eq 0 ] || tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft /-/ "$shead_tx"
+				} || { # colorea filtro si se indica color
+					[ ${#shead_cl} -eq 0 -o ${#shead_ne} -gt 0 ] || {
+						[ $shead_pt = P -o $shead_pt = S ] && {
+							tize -v shead_ft $shead_ne $shead_cl $shead_ft
+							[ $shead_pt = P ] && shead_tx=$shead_ft$tr || shead_tx=$tr$shead_ft
+						} || tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft /-/ "$shead_tx"
+					}
 				}
 			}
 		} || { # no mostrar lineas coincidentes - se mostraran lineas no coincidentes
@@ -99,7 +106,7 @@ local ln="" tr="" mt=true
 	}
 } # Sin filtro
 
-! $mt || { # aplicar
+! $mt || { # reemplazar? y aplicar
 # solo pasa si las 2 son false
 [ ${#shead_rp} -eq 0 ] || [ "$shead_tx" = "${shead_tx##*$shead_ft}" ] || { # reemplazar
 	[ ${#shead_cl} -ne 0 ] || { [ $shead_pt != I ] || shead_cl="-c 6" ;}
@@ -108,7 +115,10 @@ local ln="" tr="" mt=true
 		[ ${#shead_cl} -eq 0 ] || tize -v shead_rp $shead_cl $shead_rp
 # echo --$shead_rp--$tr--
 		[ $shead_pt = P ] && shead_tx=$shead_rp$tr || shead_tx=$tr$shead_rp
-	} || tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft -r $shead_rp /-/ "$shead_tx"
+	} || {
+		[ $shead_pt != I -a ${#shead_cl} -eq 0 ] && shead_ne="-n"
+		tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft -r $shead_rp /-/ "$shead_tx"
+	}
 }
 
 $shead_nm && ! $shead_mi && ln=$shead_ct"\t" || :
@@ -124,10 +134,10 @@ local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/shead_$US
 shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0
 shead_sl='\n' shead_rp="" shead_cr=false shead_nr=0 shead_sa=false shead_ne="" shead_mi=false shead_cl=""
 # nm numerar - tx texto - ft filtro - rt resultado - pt parte - md modo - ct contador - sl salto_linea - rp reemplazo - dr devolver_resultados - nr nº_resultados - sa salida_a_archivo - nm numerar_lineas - mi multiinstancias - cl color - ne sin estilo
-[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 5 Ultima opcion ; return ;}
+[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 38 -c 5 Ultima opcion ; return ;}
 
 while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
-	-a)	path ae "$2" && shift 2 || { echo "$2 no existe" ; return ;} ;;
+	-a)	path ae "$2" && shift 2 || { echo "No existe el archivo $2" ; return ;} ;;
 	-o) shead_sa=true as="$2" ; shift 2 ;;
 	-l) shead_nm=true ; shift ;;
 	-z) shead_sl=" " ; shift ;;
@@ -145,9 +155,6 @@ while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
 	 *) [ $ul -ne 0 ] || for cm in in ul ; do
 			isnum $1 && {
 				eval $cm=$1 ; shift
-			} || {
-				[ $e "$1" ] && path ae "$1" && shift
-				break
 			}
 		done ; break ;;
 esac ; done
