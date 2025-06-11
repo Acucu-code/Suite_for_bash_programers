@@ -49,7 +49,3 @@ A call to '. include varize check infsh' will include all scripts except
 
 To obtain information about a command, it is usually enough to run it without
 any options, currently only in Spanish.
-
-LAST CHANGES:
-
-'path' Fixed bug with addresses with spaces 
