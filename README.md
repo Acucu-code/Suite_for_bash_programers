@@ -5,14 +5,15 @@ commands that, except in rare and forced cases, only use internal commands.
 
 CONTENT:
 
-- Manage script inclusion (include, tipo)
+- Manage script inclusion (include)
 - Filter text (shead)
 - Colorize/style text (tize, parp)
-- Separate instances (sep)
+- Separate instances and can execute commands with each of them (sep)
 - Send standard output to a script (tb)
 - Pass command output to a variable (varize)
 - Identify numbers (isnum)
 - Enumerate numbers and count words (enum)
+- Find out the command type and return (0|true) for functions and # (1-5|false) for the rest (tipo)
 - Check options (check)
 - Display a script's header information (infsh)
 - Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
