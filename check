@@ -2,7 +2,7 @@
 # oxr 2025
 # Chequeo de opciones
 #
-# >    check [-] texto
+# \\b    check [-] texto
 #
 # Las acciones son [s]si [enter]no [q]quitar/cancelar
 # '-' no termina el programa llamante al pulsar [q] si 'check' fue incluido en aquel.

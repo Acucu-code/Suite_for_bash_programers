@@ -3,7 +3,7 @@
 # Enumera una cantidad en sus integrantes o cuenta las palabras de una frase
 # Debe incluirse '. enum' para que la asignacion a variable surta efecto
 #
-# >    enum [-e] [var] -c frase | var nº [cº]
+# \\b    enum [-e] [var] -c frase | var nº [cº]
 #
 # '-c'  devuelve el numero de palabras de la frase, 'var' es opcional
 # 'var' nombre de la variable a la que asignar el resultado
@@ -11,9 +11,9 @@
 # 'cº'  comienzo de la enumeracion, 0 por defecto
 # '-e'  tambien muestra el resultado
 #
-# >    enum x 3 ; for i in $x ; do ... ; done
+# \\b    enum x 3 ; for i in $x ; do ... ; done
 #
-# >    enum -c $frase ; shift $?
+# \\b    enum -c $frase ; shift $?
 #
 # EN PROCESO - FUNCIONA - INCLUIR
 

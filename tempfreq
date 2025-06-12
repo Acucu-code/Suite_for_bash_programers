@@ -2,7 +2,7 @@
 # oxr 2025
 # Controla la temperatura con cpufreq schedutil a traves de scaling_max_freq
 #
-# >    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ]
+# \\b    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ]
 #
 # 'intervalo' de refresco en segundos
 # 'repeticiones' nº repeticiones u ocurrencias para aplicar la modulacion
@@ -14,8 +14,8 @@
 # comandos, con opciones directas: 'q' termina el programa, 'l' muestra/oculta el log, 'i' muestra informacion 'h' la ayuda.
 # Puede ser gestionado manualmente con el programa tempfreq_log, 'aqui' traera la salida del programa.
 #
-# >    tempfreq 10 0 2 0 true - pone intervalo a 10” amplitud de modulacion a ⇐200 Mhz y activa el log, '0' no modifica.
-# >    tempfreq i - muestra informacion sobre el uso del programa, variables y log.
+# \\b    tempfreq 10 0 2 0 true - pone intervalo a 10” amplitud de modulacion a ⇐200 Mhz y activa el log, '0' no modifica.
+# \\b    tempfreq i - muestra informacion sobre el uso del programa, variables y log.
 #
 # A mas intervalo y mas repeticiones, mas estabilidad de frecuencia, pero mayor riesgo de sobrecalentamiento
 # A mayor amplitud, mas rapido el ajuste, pero menos margen de operacion

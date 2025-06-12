@@ -2,7 +2,7 @@
 # oxr 2025
 # Da estilo, elimina ,reemplaza o cuenta ocurrencias en un texto
 #
-# >    tize [-e] [-s SEP] [-C] [-v nm] [-a archivo] ···
+# \\b    tize [-e] [-s SEP] [-C] [-v nm] [-a archivo] ···
 # ···   [-n]|[[-c nº -f nº] [-b] [-p] [-u]] ···
 # ···    [-q] objetivo [-r reemplazo] [SEP nueva instancia...] [--] SEP texto
 #
@@ -28,7 +28,7 @@
 # Si va a colorear un solo caracter pongalo en la primera instancia, queriendo
 #  colorear mas, puede fallar, por los caracteres de las secuencias de escape
 # Los abarcadores '[',']','{' y '}' cada uno en una instancia y en ese orden
-# Los caracteres especiales como '() <>' entrecomillarlos "(" o escaparlos ⧵(
+# Otros caracteres especiales como '() <>' entrecomillarlos "(" o escaparlos ⧵(
 #
 # EN PROCESO - FUNCIONA - INCLUIBLE '. tize'.
 #

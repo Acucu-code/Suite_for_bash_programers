@@ -2,7 +2,7 @@
 #oxr 2025
 # convierte una ruta parcial en absoluta y se la asigna a una variable
 #
-# >    path [-e] var ruta
+# \\b    path [-e] var ruta
 #
 # '-e'    tambien muestra el resultado
 # 'var'   variable que contendra la ruta absoluta

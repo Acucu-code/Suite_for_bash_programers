@@ -2,7 +2,7 @@
 # oxr 2024
 # Captura la salida de una tuberia y se la entrega a un script
 #
-# >    orden | tb script [argumentos]
+# \\b    orden | tb script [argumentos]
 #
 # Tras 'script' o 'argumentos' de darse, se colocara la salida de 'orden'.
 # 'script' puede ser un comando que no recoja tuberias como echo o printf.

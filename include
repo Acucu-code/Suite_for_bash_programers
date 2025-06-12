@@ -9,15 +9,15 @@
 #
 # Desde linea de comandos de 'bash':
 #
-# >    . include [-l] script_1 [script_2 ...] # la prinera vez, luego sin '. '
+# \\b    . include [-l] script_1 [script_2 ...] # la prinera vez, luego sin '. '
 #
 # '-l' Para ver informacion del proceso de inclusion
 #
 # En script 'sh':
 #
-# >    [ $include_ctl || ] . include ; include script_1 [script_2 ...]
+# \\b    [ $include_ctl || ] . include ; include script_1 [script_2 ...]
 #
-# Lo de '$include_ctl' es para ahorrar procesamiento aunque no es obligatorio,
+# Lo de '$include_ctl' es para ahorrar procesamiento,
 #
 
 
@@ -44,7 +44,10 @@ echo $include_e $x '\t\e[1;'$1'm'"$2 $include_v"'\e[0m\t\t'$y$3
 
 include(){
 local include_v="" include_p="" include_o=${0##*/} include_i="$@" include_t=""
-[ ${#1} -ne 0 ] || { [ "$include_o" = "include" ] || [ "$include_o" = "sh" ] && { infsh ~/code/include 3 20 ; return ;} || : ;}
+[ ${#1} -ne 0 ] || {
+	# [ "$include_o" = "include" ] || [ "$include_o" = "sh" ] &&
+{ infsh ~/code/include 3 20 ; return ;}
+}
 read include_p < /proc/$$/comm
 $include_l || include_log 96 IN
 [ $# -ne 0 ] || return
@@ -58,7 +61,8 @@ for include_v in $@ ; do
 		} || { # incluir
 			. ~/code/$include_v ;
 			$include_l || include_log 92 INC -
-			include_c=$((include_c+1)) ; [ $include_c -lt 20 ] || { read -p "INCLUDE>Loco - Se saldra del shell" r ; exit ;}
+			include_c=$((include_c+1))
+			[ $include_c -lt 100 ] || { read -p "INCLUDE>Loco - Se saldra del shell" r ; exit ;}
 		}
 	}
 done

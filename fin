@@ -2,7 +2,7 @@
 #oxr 2025
 # gestion de salida del sistema por tiempo o temperatura
 #
-# >    fin [[-+]t [nº]] [[-p]oweroff [-h]ibernate [-s]leep [-r]eboot]
+# \\b    fin [[-+]t [nº]] [[-p]oweroff [-h]ibernate [-s]leep [-r]eboot]
 #
 # '-t|+t' cuando la temperatura baje o suba hasta nº, sino en nº o 300 segundos
 # '-[p|h|s|r]' accion a realizar, sino hibernate
