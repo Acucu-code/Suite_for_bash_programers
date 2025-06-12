@@ -1,14 +1,14 @@
 #!/bin/sh
 # oxr 2025 SHEAD V2
 # Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
-# y definir el modo de salida. Puede actuar como  'cat' 'grep' 'head/tail'
+# y definir el modo de salida. Puede actuar como 'cat' 'grep' 'head/tail'
 #
-# >    [|] shead [-a archivo] [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
+# \\b    (|) shead (-a archivo) [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
 # ···   [-f nº|inicioº [finº]] [-p|-pp|-s|-ss] [-|!] [--] [[-c colorº] ···
 # ···    filtro [-r reemplazo]] [SEP nueva instancia [SEP ...]]
 #
 # Opciones generales:
-# '-a'       leera desde ese archivo sino de la salida standard con '|'
+# '-a'       lee de archivo sino de la salida standard '|', excluyentes entre si
 # '-o'       salida a otro archivo, si '-m' todo el texto sera enviado
 # '-l'       mostrara el nº de linea
 # '-C'       solo devolvera el nº de resultados
@@ -30,8 +30,6 @@
 # 'filtro'   texto a encontrar. Entrecomillar si espacios o comodines
 # '-r'       reemplazar.
 #
-# Si no '-a' el archivo sera el primer argumento, y si 'inicio' se filtraran
-# esas primeras lineas.
 # Por defecto se muestran todas las lineas y se resaltan las coincidencias.
 # Por 'pre/sufijo' se muestran las lineas con coincidencias. Esto se puede usar
 # para filtrar por contenido con '-p *filtro' o '-s filtro*' que mostrara solo
@@ -39,9 +37,6 @@
 #
 # EN PROCESO - FUNCIONANDO - INCLUIBLE EN OTROS SCRIPTS '. shead'
 
-# Muestra una lista con algo de informacion sobre las funciones incluidas en el shell - no puedo meterlo en un alias y en un script hace referencia a lo incluido en el mismo
-# set | shead -s - "\ ()*" | tb sep -O '[ -e ~/code/$sep_C ] && { echo ___ $sep_C ___ ; shead -a ~/code/$sep_C 3 3 -p \# -r "\ " ;} || echo --- $sep_C --- pertenece a ${sep_C%_*}'
-#
 # GESTION MANUAL DE * ,reemplaza con ?[?...] - ya no hace falta
 # . enum
 # x=1234567
@@ -91,7 +86,7 @@ local ln="" tr="" mt=true
 				} || { # colorea filtro si se indica color
 					[ ${#shead_cl} -eq 0 -o ${#shead_ne} -gt 0 ] || {
 						[ $shead_pt = P -o $shead_pt = S ] && {
-							tize -v shead_ft $shead_ne $shead_cl $shead_ft
+							tize -v shead_ft $shead_ne $shead_cl "$shead_ft"
 							[ $shead_pt = P ] && shead_tx=$shead_ft$tr || shead_tx=$tr$shead_ft
 						} || tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft /-/ "$shead_tx"
 					}
@@ -134,7 +129,7 @@ local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/shead_$US
 shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0
 shead_sl='\n' shead_rp="" shead_cr=false shead_nr=0 shead_sa=false shead_ne="" shead_mi=false shead_cl=""
 # nm numerar - tx texto - ft filtro - rt resultado - pt parte - md modo - ct contador - sl salto_linea - rp reemplazo - dr devolver_resultados - nr nº_resultados - sa salida_a_archivo - nm numerar_lineas - mi multiinstancias - cl color - ne sin estilo
-[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 38 -c 5 Ultima opcion ; return ;}
+[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 5 Ultima opcion ; return ;}
 
 while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
 	-a)	path ae "$2" && shift 2 || { echo "No existe el archivo $2" ; return ;} ;;
@@ -208,7 +203,7 @@ while : ; do #Gestion de instancias
 	}
 
 [ "$td" != "$it" ] || break
-		ae=$at shead_mi=true shead_nr=0 shead_rp="" shead_pt="I" shead_md=false shead_ct=0 shead_ft=""
+		ae=$at in=1 shead_mi=true shead_nr=0 shead_rp="" shead_pt="I" shead_md=false shead_ct=0 shead_ft=""
 		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" > "$ae" || echo -n "$shead_rs" > "$ae"
 		shead_rs=""
 done
