@@ -1,5 +1,15 @@
 #!/bin/sh
 # oxr 2025
+# Retorna si un comando es una funcion o no. Debe incluirse '. tipo'
+# Devuelve 0 o 1 en la variable '$?'
+#
+# \\b    tipo [-e] comando && ... || ...
+#
+# \\b    tipo comando ; [ $? = 2 ] && echo "$1 no es un script"
+#
+# '-e'    muestra el tipo
+
+# oxr 2025 nueva version en proceso
 # Averigua el tipo de un comando y devuelve (0|true) para las funciones y
 # (1-5|false) para el resto:
 #
@@ -15,38 +25,42 @@
 
 
 tipo(){
-local tipo_e=true tipo_c=/tmp/tipo_$USER # tipo_t="" tipo_x=""
 
-# echo -n "TIPO>"
-[ "$1" != "" ] || { infsh ~/code/tipo 3 14 ; return 5 ;}
-[ $1 != -e ] || { shift ; tipo_e=false ;}
-{ [ ${#BASH} -ne 0 ] && type -t $1 || type $1 ;} >$tipo_c 2>/dev/null
-read tipo_c < $tipo_c
-$tipo_e || echo $tipo_c
-# echo "TIPO>$tipo_c"
-case $tipo_c in
-	function|"$1 is a shell function")return 0 ;;
-	alias|"$1 is an alias for *")return 1 ;;
-	keyword|"$1 is a shell keyword")return 2 ;;
-	builtin|"$1 is a shell builtin"|"$1 is a special shell builtin")return 3 ;;
-	file|"$1 is /*")return 4 ;;
-	*)return 5 ;;
-esac
-return
-
-
-# case $1 in
-# "") infsh ~/code/tipo 3 10 ;;
-# -e) shift ; [ ${#BASH} -ne 0 ] && type -t $@ || type $@ ;;
-# *) type $1 > $tipo_c 2>/dev/null ; tipo_x=$?
-	# [ $tipo_x != 2 ] || return 2
-	# read tipo_t < $tipo_c
-	# [ "${tipo_t%/*}" = "$tipo_t" ] && {
-		# [ $tipo_x = 1 ] && return 2 || return 0
-	# } || {
-		# [ $tipo_x = 1 ] && return 2 || return 1
-	# } ;;
+#nueva version en proceso
+# local tipo_e=true tipo_c=/tmp/tipo_$USER # tipo_t="" tipo_x=""
+# #echo -n "TIPO>"
+# [ "$1" != "" ] || { infsh ~/code/tipo 3 14 ; return 5 ;}
+# [ $1 != -e ] || { shift ; tipo_e=false ;}
+# { [ ${#BASH} -ne 0 ] && type -t $1 || type $1 ;} >$tipo_c 2>/dev/null
+# read tipo_c < $tipo_c
+# $tipo_e || echo $tipo_c
+# #echo "TIPO>$tipo_c"
+# case $tipo_c in
+	# function|"$1 is a shell function")return 0 ;;
+	# alias|"$1 is an alias for *")return 1 ;;
+	# keyword|"$1 is a shell keyword")return 2 ;;
+	# builtin|"$1 is a shell builtin"|"$1 is a special shell builtin")return 3 ;;
+	# file|"$1 is /*")return 4 ;;
+	# *)return 5 ;;
 # esac
+# return
+
+
+local tipo_c=/tmp/tipo_$USER tipo_t="" tipo_x=""
+case $1 in
+"") infsh ~/code/tipo 3 10 ;;
+-e) shift ; [ ${#BASH} -ne 0 ] && type -t $@ || type $@ ;;
+*) type $1 > $tipo_c 2>/dev/null ; tipo_x=$?
+	[ $tipo_x != 2 ] || return 2
+	read tipo_t < $tipo_c
+	[ "${tipo_t%/*}" = "$tipo_t" ] && {
+		[ $tipo_x = 1 ] && return 2 || return 0
+	} || {
+		[ $tipo_x = 1 ] && return 2 || return 1
+	} ;;
+esac
+
+
 }
 
 
