@@ -2,7 +2,7 @@
 # oxr 2025
 # Log de tempfreq con opciones de control de la frecuencia
 # Este script es llamado automaticamente por tempfreq_pan que a su vez es
-# incluido en control(un script del panel)
+# incluido en control(un script del panel) al alcanzar cierta temperatura
 
 
 xterm -T 'TempFreq Log' -fc 5 -geometry 38x3-0-0 -e sh -c '
