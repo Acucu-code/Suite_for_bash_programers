@@ -6,14 +6,15 @@ commands that, except in rare and forced cases, only use internal commands.
 CONTENT:
 
 - Manage script inclusion (include)
-- Filter text (shead)
-- Colorize/style text (tize, parp)
+- Filter text: highlight, delete, replace and output mode (shead)
+- Colorize/style text (tize)
+- Positionable text generator, with style, repetitions and more (parp)
 - Separate instances and can execute commands with each of them (sep)
 - Send standard output to a script (tb)
-- Pass command output to a variable (varize)
+- Pass command output to a variables (varize)
 - Identify numbers (isnum)
 - Enumerate numbers and count words (enum)
-- Find out the command type and return (0|true) for functions and # (1-5|false) for the rest (tipo)
+- Find out the command type and returns a numeric identifier (tipo)
 - Check options (check)
 - Display a script's header information (infsh)
 - Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
@@ -41,8 +42,9 @@ incident.
 The working files for some scripts, called 'script_$USER', will also be stored
 in '/tmp'.
 
-A call to '. include varize check infsh' will include all scripts except
-'tempfreq' that is not includable, and 'tempfreq_log', which opens a window.
+A call to '. include varize check infsh' will include all scripts except 'fin'
+that is not necessary, 'tempfreq' that is not includable, and 'tempfreq_log'
+that opens a window.
 
 To obtain information about a command, it is usually enough to run it without
 any options, currently only in Spanish.
