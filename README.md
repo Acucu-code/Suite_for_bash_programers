@@ -3,7 +3,7 @@ DESCRIPTION:
 This suite contains 'sh' scripts designed to complement programming with
 commands that, except in rare and forced cases, only use internal commands.
 
-CONTENTS:
+CONTENT:
 
 - Manage script inclusion (include)
 - Filter text (shead)
