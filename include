@@ -56,7 +56,7 @@ for include_v in $@ ; do
 	[ $include_t -eq 0 ] && { # Incluido
 		$include_l || include_log 93 FUN
 	} || { # No incluido
-		[ $include_o = $include_v -o $include_t = 5 ] && { # no existe
+		[ $include_o = $include_v -o $include_t = 2 ] && { # no existe
 			$include_l || include_log "47;91" NOT
 		} || { # incluir
 			. ~/code/$include_v ;
