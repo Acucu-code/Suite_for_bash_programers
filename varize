@@ -3,21 +3,21 @@
 # Asigna a una o mas variables la salida de una orden o registros de un archivo;
 #  por linea y campo. Incluir '. varize' para que la asignacion surta efecto
 #
-# \\b    varize [-e] -a archivo [-l lº] [-n [cº [rº]]] [-m] var [var... [--]] orden
+# \\b    varize [-e] (-a archivo) [-l lº] [-n [cº [rº]]] [-m] var [var... [--]] (orden)
 #
+# '-e'  muestra el valor
 # '-a'  archivo del que leer, excluye 'orden' y viceversa
 # '-n'  Reparte por cºampos hasta rº, o asigna a variables declaradas si no rº.
 # ···    Si rº=0, habra reparto hasta el final; si rº, y hay resto, a la ultima.
 # '-l'  lee de esa linea. Si no -n, se repartira entre las variables.
 # ···    Si lº=0 sera la ultima linea.
 # '-m'  multiples variables '--' fin de variables
-# 'orden' no puede tener tuberias '|', ignora el entrecomillado
 # 'var' nombre de variable a asignar
-# '-e'  tambien muestra el valor
+# 'orden' no puede tener tuberias '|', ignora el entrecomillado
 #
 # \\b    varize -e -m p n -- pgrep -l -r R
 #
-# \\b    varize -l 2 u df -k --output=used /dir
+# \\b    varize -l 2 u df -h --output=used ; echo $u
 #
 # \\b    varize -e -n 2 3 -m x y -- echo no si tambien tampoco
 #

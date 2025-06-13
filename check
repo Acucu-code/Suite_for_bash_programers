@@ -2,10 +2,12 @@
 # oxr 2025
 # Chequeo de opciones
 #
-# \\b    check [-] texto
+# \\b    check [-] texto && ... || ...
 #
+# '-' si 'check' fue incluido en el programa, no lo termina al pulsar [q].
+
+# Una llamada directa desde bash sin '-' ¡cerrara el terminal!
 # Las acciones son [s]si [enter]no [q]quitar/cancelar
-# '-' no termina el programa llamante al pulsar [q] si 'check' fue incluido en aquel.
 # La salida, se recoge con '$?' ,si>0 enter>1 cancelar>2 quitar>3
 
 
@@ -13,13 +15,14 @@
 
 
 check_E(){
-[ ${#2} -ne 0 ] && check_T="$check_T /-/ :" || check_T="^ $check_T /-/ , -"
-parp -s /-/ $check_T -z -c 74 [$1] /-/ +- 2
+local sp="¬" # separador para parp
+[ ${#2} -ne 0 ] && check_T="$check_T $sp :" || check_T="^ $check_T $sp , -"
+parp -s $sp $check_T -z -c 74 [$1] $sp +- 2
 }
 
 
 check(){
-[ ${#1} -eq 0 ] && infsh ~/code/check 3 9 && return 2 || :
+[ ${#1} -eq 0 ] && infsh ~/code/check 3 11 && return 2 || :
 local check_T="$@" check_R="" check_Q=true
 [ "$1" != "-" ] || { shift ; check_Q=false; }
 check_E s -

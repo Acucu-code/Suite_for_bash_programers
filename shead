@@ -55,8 +55,8 @@
 
 
 shead_fun(){
-local ln="" tr="" mt=true
-# ln nºlinea - tr texto_restante - mt mostrar
+local ln="" tr="" mt=true sp="øo"
+# ln nºlinea - tr texto_restante - mt mostrar - sp separador_para_tize
 [ ${#shead_ft} -eq 0 ] || { # filtrar
 	[ $shead_pt = I ] && { # Contenido
 		tr=${shead_tx##*$shead_ft}
@@ -66,10 +66,10 @@ local ln="" tr="" mt=true
 				false) # mostrar
 						[ ${#shead_cl} -ne 0 ] || shead_cl="-c 2"
 						shead_nr=$((shead_nr+1))
-						tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft /-/ "$shead_tx" ;;
+						tize -v shead_tx -s $sp $shead_ne $shead_cl $shead_ft $sp "$shead_tx" ;;
 				true) # no mostrar el filtro
 						shead_nr=$((shead_nr+1))
-						tize -v shead_tx -s /-/ $shead_ne -q $shead_ft /-/ "$shead_tx" ;;
+						tize -v shead_tx -s $sp $shead_ne -q $shead_ft $sp "$shead_tx" ;;
 				  "") # no mostrar lineas coincidentes
 					# shead_nr=$((shead_nr+1))
 					$shead_sa && [ "$shead_ne" = "-n" ] || mt=false ;;
@@ -82,13 +82,13 @@ local ln="" tr="" mt=true
 			[ ${#shead_rp} -ne 0 ] || {
 				shead_nr=$((shead_nr+1))
 				$shead_md && { # no mostrar filtro
-					[ $shead_pt = P -o $shead_pt = S ] && shead_tx=$tr || tize -v shead_tx -s /-/ $shead_ne -q $shead_ft /-/ "$shead_tx"
+					[ $shead_pt = P -o $shead_pt = S ] && shead_tx=$tr || tize -v shead_tx -s $sp $shead_ne -q $shead_ft $sp "$shead_tx"
 				} || { # colorea filtro si se indica color
 					[ ${#shead_cl} -eq 0 -o ${#shead_ne} -gt 0 ] || {
 						[ $shead_pt = P -o $shead_pt = S ] && {
 							tize -v shead_ft $shead_ne $shead_cl "$shead_ft"
 							[ $shead_pt = P ] && shead_tx=$shead_ft$tr || shead_tx=$tr$shead_ft
-						} || tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft /-/ "$shead_tx"
+						} || tize -v shead_tx -s $sp $shead_ne $shead_cl $shead_ft $sp "$shead_tx"
 					}
 				}
 			}
@@ -112,7 +112,7 @@ local ln="" tr="" mt=true
 		[ $shead_pt = P ] && shead_tx=$shead_rp$tr || shead_tx=$tr$shead_rp
 	} || {
 		[ $shead_pt != I -a ${#shead_cl} -eq 0 ] && shead_ne="-n"
-		tize -v shead_tx -s /-/ $shead_ne $shead_cl $shead_ft -r $shead_rp /-/ "$shead_tx"
+		tize -v shead_tx -s $sp $shead_ne $shead_cl $shead_ft -r $shead_rp $sp "$shead_tx"
 	}
 }
 
@@ -129,7 +129,7 @@ local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/shead_$US
 shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0
 shead_sl='\n' shead_rp="" shead_cr=false shead_nr=0 shead_sa=false shead_ne="" shead_mi=false shead_cl=""
 # nm numerar - tx texto - ft filtro - rt resultado - pt parte - md modo - ct contador - sl salto_linea - rp reemplazo - dr devolver_resultados - nr nº_resultados - sa salida_a_archivo - nm numerar_lineas - mi multiinstancias - cl color - ne sin estilo
-[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 5 Ultima opcion ; return ;}
+[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 7 filtro ¬ -c 5 Ultima opcion ; return ;}
 
 while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
 	-a)	path ae "$2" && shift 2 || { echo "No existe el archivo $2" ; return ;} ;;
