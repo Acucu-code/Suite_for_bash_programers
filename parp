@@ -25,7 +25,7 @@
 # Las opciones [-e -r -p -t -a -v] se pueden repetir en la misma instancia.
 # El SEParador de instancias por defecto es '/'
 #
-# El Log '/tmp/parp.log' de darse la opcion '-l', contiene la salida del programa,
+# El Log '/tmp/code_$USER/parp.log' de darse la opcion '-l', contiene la salida del programa,
 # 	utilizable para crear archivos de instancias y de escapes.
 #	Las instancias se pueden editar facilmente. Y las secuencias de escape se
 #   pueden usar directamente con 'cat'.
@@ -194,7 +194,7 @@ parp_inf(){ # AYUDA
 
 
 parp(){ # INICIO
-local r=/tmp/parp.log p=${0##*/} e=""
+local r=/tmp/code_$USER/parp.log p=${0##*/} e=""
 # r Archivo_Registro - p Llamante - e echo -e
 parp_r="" parp_s="/" parp_e=" " parp_x=false parp_i="" parp_l=false
 # r Resultado - s Separador - e espaciado - x espaciado_extra - i Instancias_Registro - l Registrar?

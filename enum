@@ -34,7 +34,7 @@ while [ ${#1} -ne 0 ] ; do case $1 in
 esac ; done
 
 while [ $enum_c -lt $enum_n ] ; do enum_r=$enum_r"$enum_c " enum_c=$((enum_c+1)) ; done
-echo $enum_r > /tmp/enum_$USER && eval read $enum_v < /tmp/enum_$USER || :
+echo $enum_r > /tmp/code_$USER/enum && eval read $enum_v < /tmp/code_$USER/enum || :
 $enum_e && echo -n $enum_r
 }
 

@@ -237,7 +237,7 @@ while : ; do # RUTINA
 		i) tty_ctl && info $z ;;
 		l) $l && l=false || l=true ;;
 		r) salir r ;;
-		h) infsh ~/code/tempfreq 3 32 ;;
+		h) infsh ~/code/tempfreq 3 32 >$tty ;;
 		m) fmx=$fnmx fmxf=$fnmx fmxa=$fnmx fmna=$fmd ;;
 		d) fmx=$fmd fmxf=$fnmx fmxa=$fmd fmna=$fmn ;;
 		n) fmx=$fmn fmxf=$fmd fmxa=$fmd fmna=$fnmn ;;

@@ -11,7 +11,7 @@ PATH=$PATH:~/code
 tize -c 2 [ / -c 2 ] / "[l]log/no [i]info []refrescar [q]salir\n\
 [nº]tope [m]max [d]med [n]min [+|-]mod\n\
 [o ...]opcines de tempfreq [*]ejecutar"
-nm=/tmp/tempfreq tty=`/bin/tty` ; echo $tty > $nm.tty
+nm=/tmp/code_$USER/tempfreq tty=`/bin/tty` ; echo $tty > $nm.tty
 sleep 4
 [ -e $nm.pid ] && e=true || e=false
 case $e in
@@ -24,7 +24,7 @@ while : ; do read r
 [ ${#r} -ne 0 ] && isnum $r && r="= $r"
 read x < $nm.slp
 case ${r%% *} in
-o|l|i|r|m|d|n|+|-|=|"") send "$r" ops ;;
+o|l|i|h|r|m|d|n|+|-|=|"") send "$r" ops ;;
 aqui) send $tty tty ;;
 q) rm $nm""_log.pid ; send m ops ; $e || rm $nm.pid ; exit ;;
 *) $r ;;

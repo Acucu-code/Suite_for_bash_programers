@@ -3,30 +3,31 @@
 # Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
 # y definir el modo de salida. Puede actuar como 'cat' 'grep' 'head/tail'
 #
-# \\b    (|) shead (-a archivo) [-o archivo] [-l|-C] [-S SEP] [-z] [-n] ···
-# ···   [-f nº|inicioº [finº]] [-p|-pp|-s|-ss] [-|!] [--] [[-c colorº] ···
-# ···    filtro [-r reemplazo]] [SEP nueva instancia [SEP ...]]
+# \\b    (|) shead (-a archivo) [-o archivo] [-l|-C] [-S SEP] [-n] ···
+# ···   [-f nº|inicioº [finº]] [-z] [-b] [-u] [-P] [-c colorº] [-p|-pp|-s|-ss] [-|!] [--] ···
+# ···    filtro [-r reemplazo] [SEP nueva instancia [SEP ...]]
 #
 # Opciones generales:
 # '-a'       lee de archivo sino de la salida standard '|', excluyentes entre si
 # '-o'       salida a otro archivo, si '-m' todo el texto sera enviado
 # '-l'       mostrara el nº de linea
-# '-C'       solo devolvera el nº de resultados
+# '-C'       devolvera el nº de lineas concordantes, si '!' las resultantes; por
+# \\b         pre/sufijo siempre las concordantes
 # '-S'       separador, por defecto es '/'
-# '-z'       no hara salto de linea
 # '-n'       sin estilo
 # '-f'       filtrara las nº ultimas lineas del archivo. Ultima opcion general
 # 'inicio fin' lineas a examinar, todas por defecto. Ultima opcion general
 # Opciones de instancia:
 # '-p|-s'    filtrara por prefijo o sufijo y actuara sobre ellos
 # '-pp|-ss'  idem pero actuara en toda la linea
-# '-'        no mostrara el filtro.
-# '!'        no mostrara las lineas con coincidencias.
-# '--'       fin de opciones, puede ser necesario si filtro es un numero.
+# '-|-q'     no mostrara el filtro.
+# '!|-N'     no mostrara las lineas con coincidencias.
 # '-c'       da color al filtro o su reemplazo, color[0-7] color/fondo[00-77]
 # '-b'       no bold
 # '-u'       subrayado
 # '-P'       parpadeante
+# '-z'       no hara saltos de linea. En la ultima instancia
+# '--'       fin de opciones, puede ser necesario si filtro es un numero.
 # 'filtro'   texto a encontrar. Entrecomillar si espacios o comodines
 # '-r'       reemplazar.
 #
@@ -36,19 +37,6 @@
 # las lineas coincidentes; no resaltara a menos que se indique color.
 #
 # EN PROCESO - FUNCIONANDO - INCLUIBLE EN OTROS SCRIPTS '. shead'
-
-# GESTION MANUAL DE * ,reemplaza con ?[?...] - ya no hace falta
-# . enum
-# x=1234567
-#prefijo
-# y=*6?
-# [ "${y#"*"}" = "$y" ] || { enum c $((${#x}-(${#y}-1))) ; y=${y#"*"} ; for i in $c ; do y='?'$y ; done ;}
-# echo --"$y"--${x#$y}--
-#sufijo
-# y=?2*
-# [ "${y%"*"}" = "$y" ] || { enum c $((${#x}-(${#y}-1))) ; y=${y%"*"} ; for i in $c ; do y=$y'?' ; done ;}
-# echo --"$y"--${x%$y}--
-#
 
 
 [ $include_ctl ] || . include ; include tize isnum path
@@ -119,23 +107,24 @@ local ln="" tr="" mt=true sp="øo"
 $shead_nm && ! $shead_mi && ln=$shead_ct"\t" || :
 
 shead_rs="$shead_rs$ln$shead_tx$shead_sl"
+
 }
 }
 
 
 shead(){
-local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/shead_$USER
+local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/code_$USER/shead
 # dp directorio_previo - ae archivo - cm comodin - as archivo_salida - td todo - it instancia - sp separador - in inicial - ul ultima - at archivo_temporal
 shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0
 shead_sl='\n' shead_rp="" shead_cr=false shead_nr=0 shead_sa=false shead_ne="" shead_mi=false shead_cl=""
 # nm numerar - tx texto - ft filtro - rt resultado - pt parte - md modo - ct contador - sl salto_linea - rp reemplazo - dr devolver_resultados - nr nº_resultados - sa salida_a_archivo - nm numerar_lineas - mi multiinstancias - cl color - ne sin estilo
-[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 36 -c 7 filtro ¬ -c 5 Ultima opcion ; return ;}
+[ ${#1} -ne 0 ] || { infsh ~/code/shead 3 37 -c 7 filtro ¬ -c 5 Ultima opcion ; return ;}
 
 while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
 	-a)	path ae "$2" && shift 2 || { echo "No existe el archivo $2" ; return ;} ;;
 	-o) shead_sa=true as="$2" ; shift 2 ;;
 	-l) shead_nm=true ; shift ;;
-	-z) shead_sl=" " ; shift ;;
+	# -z) shead_sl="" ; shift ;;
 	-n) shead_ne="-n" ; shift ;;
 	-S) sp="$2" ; shift 2 ;;
 	-C) shead_cr=true shead_ne="-n" ; shift ;;
@@ -154,7 +143,7 @@ while [ ${#1} -ne 0 ] ; do case "$1" in # opciones generales
 		done ; break ;;
 esac ; done
 
-cd /tmp/vacio
+cd /tmp/code_$USER/vacio
 
 td=$@
 
@@ -164,8 +153,8 @@ while : ; do #Gestion de instancias
 #opciones de instancia
 	shead_cl=""
 	while [ $# -ne 0 ] ; do case "$1" in
-		!) shift; shead_md="" ;;
-		-) shift; shead_md=true ;;
+		!|-N) shift; shead_md="" ;;
+		-|-q) shift; shead_md=true ;;
 		-p) shift; shead_pt="P" ;;
 		-pp) shift; shead_pt="PP" ;;
 		-s) shift; shead_pt="S" ;;
@@ -174,6 +163,7 @@ while : ; do #Gestion de instancias
 		-P) shead_cl="$shead_cl -p" ; shift ;; #parpadeo
 		-u) shead_cl="$shead_cl -u" ; shift ;; #subrayado
 		-b) shead_cl="$shead_cl -b" ; shift ;; #no bold
+		-z) shead_sl=" " ; shift ;;
 		--)shift;break;;
 		*)break;;
 	esac ; done
@@ -217,6 +207,7 @@ $shead_sa && { # salida a archivo
 } || { # salida a pantalla
 	$shead_cr && echo $shead_nr || {
 		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" || echo -n "$shead_rs"
+
 	}
 }
 }
@@ -228,8 +219,22 @@ $shead_sa && { # salida a archivo
 # de los archivos que hay en el directorio desde donde se lanzo la orden.
 # SOLUCION ACTUAL
 # Directorio de trabajo vacio
-mkdir -m -w -p /tmp/vacio
+mkdir -m -w -p /tmp/code_$USER/vacio
 
 
 [ ${0##*/} != shead ] || shead "$@"
+
+# GESTION MANUAL DE * ,reemplaza con ?[?...] - ya no hace falta
+# . enum
+# x=1234567
+#prefijo
+# y=*6?
+# [ "${y#"*"}" = "$y" ] || { enum c $((${#x}-(${#y}-1))) ; y=${y#"*"} ; for i in $c ; do y='?'$y ; done ;}
+# echo --"$y"--${x#$y}--
+#sufijo
+# y=?2*
+# [ "${y%"*"}" = "$y" ] || { enum c $((${#x}-(${#y}-1))) ; y=${y%"*"} ; for i in $c ; do y=$y'?' ; done ;}
+# echo --"$y"--${x%$y}--
+#
+
 #

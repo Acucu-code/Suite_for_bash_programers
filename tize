@@ -2,25 +2,25 @@
 # oxr 2025
 # Da estilo, elimina ,reemplaza o cuenta ocurrencias en un texto
 #
-# \\b    tize [-e] [-s SEP] [-C] [-v nm] [-a archivo] ···
+# \\b    tize [-e] [-s SEP] [-C] [-v var] [-a archivo] ···
 # ···   [-n]|[[-c nº -f nº] [-b] [-p] [-u]] ···
 # ···    [-q] objetivo [-r reemplazo] [SEP nueva instancia...] [--] SEP texto
 #
 # Opciones generales:
-# '-s'    SEParador de instancias, '/' por defecto. Antes que -a
-# '-C'    cuenta las coincidencias
-# '-v'    nombre de variable a asignar el resultado
-# '-a'    lee de archivo. Separador de archivo e instancia deben ser distintos.
+# '-s'    SEParador de instancias, '/' por defecto. Antes que '-a'.
+# '-C'    cuenta las coincidencias.
+# '-v'    nombre de variable a asignar el resultado.
+# '-a'    lee de archivo, separadores en archivo diferente al de instancias.
 # '-e'    'echo' al final.
 # Opciones de instancia:
 # '-c|-f' formato de color y fondo: -c (0-7 ó mas fondo 00-77) -f (0-7).
 # '-b'    no bold.
 # '-p'    parpadeante.
 # '-u'    subrayado
-# '-n'    sin estilo
+# '-n'    sin estilo.
 # '-q'    quita ocurrencias.
 # '-r'    reemplaza ocurrencias.
-# '--'    fin de opciones, en caso de ser necesario
+# '--'    fin de opciones, en caso de ser necesario.
 #
 # Para la asignacion a variable, incluir: '. tize'
 # En 'texto', si no '-n', se colorearan todas las ocurrencias de 'objetivo' o
@@ -98,7 +98,7 @@ while [ ${#1} -ne 0 ] ; do case $1 in
 esac ; done
 
 [ $# -ne 0 ] || { infsh ~/code/tize 3 31 ; return ;}
-cd /tmp/vacio
+cd /tmp/code_$USER/vacio
 cm=$@ tize_tx=${cm##* $tize_sp } # texto
 
 [ "$cm" = "$tize_tx" ] && { tize_sp="" ; tize_fun $tize_tx ;} || {  # <-texto simple
@@ -115,7 +115,7 @@ $ef || echo
 
 
 # Evitar conflictos entre corchetes/comodines y nombres de archivo: ver shead
-mkdir -m -w -p /tmp/vacio
+mkdir -m -w -p /tmp/code_$USER/vacio
 
 
 [ ${0##*/} != tize ] || tize "$@"

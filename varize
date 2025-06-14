@@ -30,7 +30,7 @@
 
 varize(){
 [ $# -gt 1 ] || { infsh ~/code/varize 3 22 ; return ;}
-local varize_v="" ec=true xx="" tp=/tmp/varize_$USER cp=0 ae=false cm="" ln="" rt=""
+local varize_v="" ec=true xx="" tp=/tmp/code_$USER/varize cp=0 ae=false cm="" ln="" rt=""
 # V nombres_variables - ec echo - ln linea - cp campo - tp tmp - rt resto/comodin - ae archivo|comodin - cm campos/comodin - xx comodin
 
 while [ ${#1} -ne 0 ] ; do case $1 in # opciones
