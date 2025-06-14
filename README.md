@@ -32,8 +32,10 @@ user$ echo PATH=$PATH:~/code >> ~/.bashrc
 /tmp/code_$USER/vacio to operate with wildcards [*|?] without incident.
 
 [ -e /tmp/code_$USER/vacio ] || {
+
 mkdir /tmp/code_$USER
 mkdir -m -w /tmp/code_$USER/vacio
+
 }
 
 3. 'tempfreq' and 'tempfreq_log' modify the CPU frequency. If not run as root,
