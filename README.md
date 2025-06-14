@@ -16,31 +16,37 @@ CONTENT:
 - Enumerate numbers and count words (enum)
 - Find out the command type and returns a numeric identifier (tipo)
 - Check options (check)
-- Display a script's header information (infsh)
+- Display script's header stylized information (infsh)
 - Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
 - Terminate the system by time or temperature (fin)
 - Converts a partial path to absolute and assigns it to a variable (path)
 
-
 CONFIGURATION:
 
-1 - These scripts must be in the /home/$USER/code folder, since 'include',
+1. These scripts must be in the /home/$USER/code folder, since 'include',
 'tempfreq_log', and the calls from each script to 'infsh' refer to this folder:
 
-  Run 'echo PATH=$PATH:~/code >> ~/.bashrc'.
+user$ echo PATH=$PATH:~/code >> ~/.bashrc
 
+2. Some tools' working files are located in /tmp/code_$USER and others use
+/tmp/code_$USER/vacio to operate with wildcards [*|?] without incident.
+
+[ -e /tmp/code_$USER/vacio ] || {
+mkdir /tmp/code_$USER
+mkdir -m -w /tmp/code_$USER/vacio
+}
+
+3. 'tempfreq' and 'tempfreq_log' modify the CPU frequency. If not run as root,
+the user must first be granted permission:
+
+user$ sudo chown $USER:$USER \
+	/sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq
 
 OTHERS:
 
 This is a suite because most scripts depend on others. They use 'include', which
 manages inclusion. Some only work if included, either with 'include' or directly
 with '. script'.
-
-Some create the '/tmp/vacio' folder to operate with wildcards [*|?] without
-incident.
-
-The working files for some scripts, called 'script_$USER', will also be stored
-in '/tmp'.
 
 A call to '. include varize check infsh' will include all scripts except 'fin'
 that is not necessary, 'tempfreq' that is not includable, and 'tempfreq_log'
