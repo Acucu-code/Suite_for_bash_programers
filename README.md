@@ -31,12 +31,7 @@ user$ echo PATH=$PATH:~/code >> ~/.bashrc
 2. Some tools' working files are located in /tmp/code_$USER and others use
 /tmp/code_$USER/vacio to operate with wildcards [*|?] without incident.
 
-[ -e /tmp/code_$USER/vacio ] || {
-
-mkdir /tmp/code_$USER
-mkdir -m -w /tmp/code_$USER/vacio
-
-}
+[ -e /tmp/code_$USER/vacio ] || { mkdir /tmp/code_$USER ; mkdir -m -w /tmp/code_$USER/vacio ;}
 
 3. 'tempfreq' and 'tempfreq_log' modify the CPU frequency. If not run as root,
 the user must first be granted permission:
