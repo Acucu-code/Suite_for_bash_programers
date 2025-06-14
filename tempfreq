@@ -1,24 +1,35 @@
 #!/bin/sh
 # oxr 2025
-# Controla la temperatura con cpufreq schedutil a traves de scaling_max_freq
+# Controla la temperatura con cpufreq schedutil a traves de scaling_max_freq.
 #
-# \\b    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ]
+# \\b    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ] &
 #
+# Al menos se debe dar una opcion:
 # 'intervalo' de refresco en segundos
 # 'repeticiones' nº repeticiones u ocurrencias para aplicar la modulacion
 # 'amplitud' rango de modulacion x ±100Mz
 # 'temperaturaº' a no sobrepasar en esceso
 # 'log' - informacion detallada true/false
 #
-# Esta pensado para ir en background, funcionando de manera automatica. Se pueden modificar las opciones desde la linea de
-# comandos, con opciones directas: 'q' termina el programa, 'l' muestra/oculta el log, 'i' muestra informacion 'h' la ayuda.
-# Puede ser gestionado manualmente con el programa tempfreq_log, 'aqui' traera la salida del programa.
+# Esta pensado para ir en background, funcionando de manera automatica.
 #
-# \\b    tempfreq 10 0 2 0 true - pone intervalo a 10” amplitud de modulacion a ⇐200 Mhz y activa el log, '0' no modifica.
-# \\b    tempfreq i - muestra informacion sobre el uso del programa, variables y log.
+# \\b    tempfreq 10 0 2 0 true &    # '0' no modifica
 #
-# A mas intervalo y mas repeticiones, mas estabilidad de frecuencia, pero mayor riesgo de sobrecalentamiento
-# A mayor amplitud, mas rapido el ajuste, pero menos margen de operacion
+# pone intervalo a 10”, amplitud de modulacion a ⇐200 Mz y activa el log.
+#
+# Una vez iniciado se dispone de las siguientes opciones:
+# 'q' termina el programa
+# 'l' muestra/oculta el log
+# 'i' muestra informacion
+# 'h' la ayuda
+#
+# \\b    tempfreq i    # muestra informacion sobre el programa, variables y log.
+#
+# Cuando es gestionado por 'tempfreq_log', 'aqui' traera su salida al tty.
+#
+# A mas intervalo y mas repeticiones, mas estabilidad de frecuencia, pero mayor
+#riesgo de sobrecalentamiento.
+# A mayor amplitud, mas rapido el ajuste, pero menos margen de operacion.
 #
 # options coretemp tjmax=53 en /etc/modprobe.d/thermal.conf
 # 'ta' amplitud de temperaturas NO se usa
@@ -92,8 +103,9 @@ info(){ # INFORMACION
 
 
 { # CONTROL DE EJECUCION
+	[ $1 ] || { infsh ~/code/tempfreq 3 32 ; return ;}
 	prg=${0##*/} # (VAR)
-	tmp="/tmp/$prg" # (VAR)
+	tmp="/tmp/code_$USER/$prg" # (VAR)
 	#donde se muestra la salida (ARCH) (VAR)
 	[ "$1" != "aqui" ] || echo > $tmp.tty
 	tty_ctl || varize -e tty /bin/tty > $tmp.tty
@@ -139,8 +151,6 @@ info(){ # INFORMACION
 ops(){ # ESTABLECE LAS OPCIONES
  	case $1 in
 		l) $l && l=false || l=true ;;
-		i) tty_ctl && info $@ ;;
-		h) infsh ~/code/tempfreq 3 21 ; exit ;;
 		q|r|m|d|n|+|-|=|"") : ;; # opciones en vivo con tempfreq_log
 		*) isnum "$1" && [ $1 -gt 0 ] && ib=$1 ia=$ib ;;
 	esac
@@ -227,7 +237,7 @@ while : ; do # RUTINA
 		i) tty_ctl && info $z ;;
 		l) $l && l=false || l=true ;;
 		r) salir r ;;
-		h) infsh ~/code/tempfreq 3 21 ;;
+		h) infsh ~/code/tempfreq 3 32 ;;
 		m) fmx=$fnmx fmxf=$fnmx fmxa=$fnmx fmna=$fmd ;;
 		d) fmx=$fmd fmxf=$fnmx fmxa=$fmd fmna=$fmn ;;
 		n) fmx=$fmn fmxf=$fmd fmxa=$fmd fmna=$fnmn ;;
