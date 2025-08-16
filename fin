@@ -9,15 +9,17 @@
 #
 
 
-[ "$USER" != "root" ] && { su - root -c "exec $0 $*" ; return ; }
+[ "$USER" = "root" ] || su - root -c "exec $0 $*"
 
 PATH=$PATH:~/code
 [ $include_ctl ] || . include ; include varize tize # isnum - varize incluye enum y este isnum
 
+
+fin(){
 a="" t="" g="" c="" d="" r="" o="-le"
-# a accion - t tiempo - g grados - c texto - d dirtemp - r read - operador
-[ ${#1} -eq 0 ] || {
-while [ ${#1} -ne 0 ] ; do case $1 in
+# a accion - t tiempo - g grados - c texto - d dirtemp - r read - o operador
+[ $# -eq 0 ] || {
+while [ $# -ne 0 ] ; do case $1 in
 -t) isnum $2 && { g=$2 ; shift 2 ;} || { g=40 ; shift ;} ;;
 +t) isnum $2 && { g=$2 ; o="-ge" ; shift 2 ;} || { g=70 ; shift ;} ;;
 -p)a=poweroff ; break ;;
@@ -28,10 +30,10 @@ while [ ${#1} -ne 0 ] ; do case $1 in
 esac ; done
 }
 
-[ ${#a} -ne 0 ] || a=hibernate
+[ ${#a} -ne 0 ] || a=reboot
 
 [ ${#g} -eq 0 ] && {
-	[ ${#t} -ne 0 ] || t=300
+	[ ${#t} -ne 0 ] || t=10
 	c="En $t segundos"
 } || {
 	varize d echo /sys/devices/platform/coretemp.0/hwmon/hwmon*
@@ -42,7 +44,7 @@ esac ; done
 	c="Cuando Tªactual($rº) $c a $gº"
 }
 
-tize -e -c 76 $t / -c 6 $a / -c 2 [s / -c 2 ] / -c 17 $gº / -c 71 $rº / "$c $a." # Esta seguro[s]"
+tize -e -c 75 $t / -c 6 $a / -c 2 [s / -c 2 ] / -c 17 $gº / -c 71 $rº / -c 9 -p ... / "$c $a ..." # Esta seguro[s]"
 # read c
 # [ "$c" = "s" ] || exit 0
 
@@ -58,6 +60,11 @@ tize -e -c 76 $t / -c 6 $a / -c 2 [s / -c 2 ] / -c 17 $gº / -c 71 $rº / "$c $a
 	echo 'M['$((${#a}+16))G ...'[0m'
 } || sleep $t
 fm false
+#umount -a 2>/dev/null
 systemctl start $a.target
 return 0
+}
+
+
+[ ${0##*/} != fin ] || fin "$@"
 #

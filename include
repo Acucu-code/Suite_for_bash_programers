@@ -28,7 +28,7 @@
 	# $include_l || include_log "44;97" FOR "$include_o($include_p)\t$include_i"
 	include_ctl=true
 	include_c=1
-	[ "$1" = "-l" ] && [ "${0##*/}" = "bash" -o "${0##*/}" = "include" ] && { include_l=false ; shift ;} || include_l=true # false es true
+	# [ "$1" = "-l" ] && [ "${0##*/}" = "bash" -o "${0##*/}" = "include" ] && { include_l=false ; shift ;} || include_l=true # false es true
 	# include_o=${0##*/} include_i="$@" ; read include_p < /proc/$$/comm
 	. tipo
 }
@@ -38,18 +38,19 @@ include_log(){
 local x="" y=""
 [ ${#BASH} -eq 0 ] || local include_e="-e"
 [ ${#3} -eq 0 ] && y=$include_i || x=$include_c
-echo $include_e $x '\t\e[1;'$1'm'"$2 $include_v"'\e[0m\t\t'$y$3
+echo $include_e $x '\e[5G\e[1;'$1'm'"$2 $include_v"'\e[0m\e[20G'$y$3
 }
 
 
 include(){
 local include_v="" include_p="" include_o=${0##*/} include_i="$@" include_t=""
-[ ${#1} -ne 0 ] || {
+[ $# -ne 0 ] || {
 	# [ "$include_o" = "include" ] || [ "$include_o" = "sh" ] &&
 { infsh ~/code/include 3 20 ; return ;}
 }
+[ $1 != "-l" ] || { include_l=false ; shift ;}
 read include_p < /proc/$$/comm
-$include_l || include_log 96 IN
+$include_l || include_log 96 SET
 [ $# -ne 0 ] || return
 for include_v in $@ ; do
 	tipo $include_v ; include_t=$?

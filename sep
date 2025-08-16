@@ -2,57 +2,89 @@
 # oxr 2025
 # Separa instancias y puede ejecutar ordenes compuestas con cada una de ellas
 #
-# \\b    sep [-E|-L]|[-s|-S SEP] [-O 'orden..$sep_C..orden..'] -A archivo|instancias
+# \\b    sep [+|-N] [-E|-L]|[-s|-S SEP] [-O 'orden..$sep_C..orden..'] -A archivo|instancias
 #
 # Opciones generales:
 # '-A' lee instancias de archivo
 # '-O' orden/es a ajecutar por cada instancia; de no darse, estas se mostraran.
-# '$sep_C' literal, es la variable que devuelve cada instancia
+# '$sep_C' literal, es la variable que contiene cada instancia
 # 'instancias' puede ser: $insts|instSEPinst...|o nada si se lee desde archivo
 # Opciones de instancia:
 # '-E' separador espacio ' ', por defecto
 # '-L' separador salto de linea
-# '-S' separador, sin espacios 'SEP'
+# '-T' separador tabulador
 # '-s' separador, se tomara como entre espacios,' SEP '
+# '-S' separador, sin espacios 'SEP'
+# '-N' no strip, mantener espacios extra y tabuladores. '+N' no, por defecto
 #
 # \\b    sep -s $S -O '$L && I=$I$sep_C$S ; parp_fun $sep_C ; $W || R=$R$E' "$@"
 #
 # \\b    sep -S - asd-123-qwe - -E asd 123 qwe -s + asd + 123 + qwe
 #
-# EN PROCESO - INCLUIBLE - FUNCIONANDO   ⧵∕ salto linea \012
+# Las opciones son en mayusculas porque puede haber conflicto con las opciones
+# de otros programas incluidos en la orden
+#
+# Tema espacios tabuladores y comillas
+# Tenemos una linea de fstab con tabuladores
+# x="/dev/sda1		/									ext3	noatime,lazytime,errors=remount-ro		0	1"
+#
+# echo "$x" -- respeta
+#	/dev/sda1		/									ext3	noatime,lazytime,errors=remount-ro		0	1
+#
+# echo $x -- reemplaza cada secuencia de tabs por un espacio
+#	/dev/sda1 / ext3 noatime,lazytime,errors=remount-ro 0 1
+#
+# sep $x || sep -N $x -- no reconoce los tabs, separa por defecto(espacio), la salida no difiere entre echo "$sep_C" y echo $sep_C
+#	/dev/sda1
+#	/
+#	ext3
+#	noatime,lazytime,errors=remount-ro
+#	0
+#	1
+#
+# sep "$x" -- reconoce los tabs y no separa, la salida 'echo $sep_C' elimina tabs
+#	/dev/sda1 / ext3 noatime,lazytime,errors=remount-ro 0 1
+#
+# sep -N "$x" -- la salida 'echo "$sep_C"' mantiene los tabs
+#	/dev/sda1		/									ext3	noatime,lazytime,errors=remount-ro		0	1
+#
+# EN PROCESO - INCLUIBLE - FUNCIONANDO   ⧵∕
 
 
 sep(){
-local sp=" " it="" sep_C="" or="" sl='
+local sp=" " it="" sep_C="" or="" st=false tb='	' sl='
 '
-# c comodin - - separador - o orden - i instancias - sl salto_de_linea
-[ ${#1} -ne 0 ] || { infsh ~/code/sep 3 20 -c 2 -b sep_C ; return ;}
+# sep_C comodin - sp separador - or orden - it instancias - st strip  - tb tabulador - sl salto_de_linea
+[ $# -ne 0 ] || { infsh ~/code/sep 3 20 -c 2 -b sep_C ; return ;}
 
-until [ ${#1} -eq 0 ] ; do case $1 in # opciones generales
-	-A) while read sep_C ;do it="$it$sep_C$sl" ; done < "$2" ; it=${it%$sl} ; shift 2 ;;
+until [ $# -eq 0 ] ; do case $1 in # opciones generales
+	-A) while read sep_C ; do it="$it$sep_C$sl" ; done < "$2" ; it=${it%$sl} ; shift 2 ;;
 	-O) or="$2" ; shift 2 ;;
 	-s) sp=" $2 " ; shift 2 ;;
 	-S) sp="$2" ; shift 2 ;;
-	-L) sp="
-" ; shift ;;
+	-L) sp="$sl" ; shift ;;
+	-T) sp="$tb" ; shift ;;
 	-E) sp=" " ; shift ;;
+	-N) st=true ; shift ;;
 	*) [ ${#it} -ne 0 ] || it=$@ ; break ;;
 esac ; done
 
-until [ "$sep_C" = "$it" ] ; do # opciones de instancia
+until [ ${#sep_C} = ${#it} ] ; do # instancias
 	set -- $it
-	while [ ${#1} -ne 0 ] ; do case $1 in
+	while : ; do case $1 in # opciones en instancia
 		-s) sp=" $2 " ; shift 2 ; it=$@ ;;
 		-S) sp="$2" ; shift 2 ; it=$@ ;;
-	-L) sp="
-" ; shift ; it=$@ ;;
+		-L) sp="$sl" ; shift ; it=$@ ;;
+		-T) sp="$tb" ; shift ; it=$@ ;;
 		-E) sp=" " ; shift ; it=$@ ;;
+		-N) st=true ; shift ; it=$@ ;;
+		+N) st=false ; shift ; it=$@ ;;
 		*) break ;;
 	esac ; done
 
 	sep_C=${it%%$sp*} it=${it#*$sp}
 
-	[ ${#or} -ne 0 ] && eval "$or" || echo $sep_C
+	[ ${#or} -ne 0 ] && eval "$or" || { $st && echo "$sep_C" || echo $sep_C ;}
 done
 }
 

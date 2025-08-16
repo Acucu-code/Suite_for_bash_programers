@@ -73,8 +73,8 @@ rdiv(){ # ASIGNA O MUESTRA EL VALOR DE UNA VARIABLE LEIDA DE UN ARCHIVO DIVIDIDA
 
 
 info(){ # INFORMACION
-[ ${#1} -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x="$"$i ; echo $i=$x ; done ; return ;}
-[ ${#1} -ne 0 ] || {
+[ $# -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x="$"$i ; echo $i=$x ; done ; return ;}
+[ $# -ne 0 ] || {
 	for i in "OTROS_____" ib ia sl tty cpu pmc pmcn \
 			TEMPERATURA tmn tp t tmx tc tnmx ta td tf tfc \
 			FRECUENCIA fnmn fmn fmna fmd fp f fm fmx fmxa fmxf fnmx ff \
@@ -96,8 +96,8 @@ info(){ # INFORMACION
 	echo "Temps     Freqs"
 	echo Previa, Actual, y de Control o Mediada
 	echo TP T TC │ FP F FM │
-	tize -e -c 3 ↺ / -c 7 ↷ / -c 4 ↕ / -c 1 ⊝ / │ ↺ Int ↷ Rep_\&_aply Mod_prop ↕⊝ Stop
-	tize -e -c 3 ☼ / -c 2 ☺ / -c 5 ⇑ / -c 6 ≊ / -c 6 ↑ / -c 2 ↓ / -c 3 ≮ / -c 4 = / -c 5 ≯ / T ☼ TC Cnt ⇑☺ Top │ F ≊ FM ↑↓≮=≯ Escal
+	tize -e -c 6 ↺ / -c 7 ↷ / -c 4 ↕ / -c 1 ⊝ / │ ↺ Int ↷ Rep_\&_aply Mod_prop ↕⊝ Stop
+	tize -e -c 3 ☼ / -c 2 ☺ / -c 5 ⇑ / -c 2 ≊ / -c 6 ↑ / -c 2 ↓ / -c 3 ≮ / -c 4 = / -c 5 ≯ / T ☼ Tmx Cnt ⇑☺ TC │ F ≊ FM ↑↓≮=≯ Escal
 	echo ——————————————————————————————————————
 }>$tty
 
@@ -117,7 +117,7 @@ info(){ # INFORMACION
 		/bin/renice -n 19 -p $$ > /dev/null
 		# /bin/chrt -i -p 0 $$
 		echo $$ > $tmp.pid # (ARCH) pid del programa
-		dt=/sys/devices/platform/coretemp.0/hwmon/hwmon* # (VAR)
+		dt=/sys/devices/platform/coretemp.0/hwmon/hwmon1 # (VAR)
 		[ -e $tmp.tmn ] || rdiv tmn $dt/temp1_input - > $tmp.tmn # (VAR) (ARCH) temperatura minima dada
 		[ -e $tmp.rbt ] && { printf %b '\eM\eM'>$tty ; rm $tmp.rbt ;} # reboot
 	info -
@@ -335,6 +335,7 @@ mcr=0
 # intervalo
 	[ $tf -gt 0 ] && {  # Mayor tª --> menor int.
 		ia=$((ib+(td*5)-(tf*10)))
+		[ $ia -le $ib ] || ia=$ib
 	} || ia=$ib #$((td*4))
  	[ $ia -gt 0 ] || ia=1
 # variador de modulacion
@@ -389,7 +390,7 @@ mcr=0
 		tize -v y -c $y ≊
 		tize -v z -c $z ☼
 		tize -v w -c 4 -b │
-		lt=$lt" $tº$z$tcº $tfc$x$tmxº $w $f$y$fm $m $fmxa""Mz\n"
+		lt=$lt" $tº$z$tmxº $tfc$x$tcº $w $f$y$fm $m $fmxa""Mz\n"
 		tize -e -c 4 -b ——————————————————————————————————————
 		echo -n " $lt"
 	}>$tty

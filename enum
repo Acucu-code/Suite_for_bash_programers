@@ -25,7 +25,7 @@ enum(){
 local enum_v="" enum_n=0 enum_c=0 enum_r="" enum_e=false
 [ $# -ne 0 ] || { infsh ~/code/enum 3 16 ; return ;}
 
-while [ ${#1} -ne 0 ] ; do case $1 in
+while [ $# -ne 0 ] ; do case $1 in
 -e) enum_e=true ; shift ;;
 -c) shift ; $enum_e && echo -n $# ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$# ; return $# ;;
  *) [ ${#enum_v} -eq 0 ] || break
@@ -39,6 +39,6 @@ $enum_e && echo -n $enum_r
 }
 
 
-[ ${0##*/} != enum ] || { [ ${#1} -ne 0 -a "$1" != -e ] && echo "enum solo asigna a variable si es incluido '. enum'\nSi solo quiere ver el resultado pruebe:\nenum -e $@" || enum "$@" ;}
+[ ${0##*/} != enum ] || { [ $# -ne 0 -a "$1" != -e ] && echo "enum solo asigna a variable si es incluido '. enum'\nSi solo quiere ver el resultado pruebe:\nenum -e $@" || enum "$@" ;}
 # echo "enum solo funciona si es incluido '. enum'"
 

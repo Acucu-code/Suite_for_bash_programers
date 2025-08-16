@@ -1,14 +1,13 @@
 #!/bin/sh
 # oxr 2025
 # Chequeo de opciones
+# Las acciones son [s]si [enter|n]no [q]quitar/cancelar
+# La salida, se recoge con '$?' ,si>0 no>1 cancelar>2 quitar>3
 #
 # \\b    check [-] texto && ... || ...
 #
-# '-' si 'check' fue incluido en el programa, no lo termina al pulsar [q].
-
-# Una llamada directa desde bash sin '-' ¡cerrara el terminal!
-# Las acciones son [s]si [enter]no [q]quitar/cancelar
-# La salida, se recoge con '$?' ,si>0 enter>1 cancelar>2 quitar>3
+# '-'    No termina al pulsar [q] cuando fue incluido en un script o bash con
+# \\b       '. check', en bash se cerraria el terminal !!
 
 
 [ $include_ctl ] || . include ; include parp
@@ -22,7 +21,7 @@ parp -s $sp $check_T -z -c 74 [$1] $sp +- 2
 
 
 check(){
-[ ${#1} -eq 0 ] && infsh ~/code/check 3 11 && return 2 || :
+[ $# -ne 0 ] || { infsh ~/code/check 3 10 ; return 2 ;}
 local check_T="$@" check_R="" check_Q=true
 [ "$1" != "-" ] || { shift ; check_Q=false; }
 check_E s -
@@ -30,7 +29,7 @@ read check_R
 case $check_R in
 	s) check_E s ; return 0 ;;
 	q) check_E q ; $check_Q && exit 3 || return 2 ;;
-	*) check_E " " ; return 1 ;;
+	*) check_E n ; return 1 ;;
 esac
 }
 

@@ -10,7 +10,7 @@
 
 tb(){
 local x=""
-[ ${#1} -eq 0 ] || ! type $1>/dev/null && { infsh ~/code/tb 3 8 ; return ;}
+[ $# -eq 0 ] || ! type $1>/dev/null && { infsh ~/code/tb 3 8 ; return ;}
 while read x ; do # lee de la tuberia
 	"$@" "$x"
 	echo

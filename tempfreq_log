@@ -5,7 +5,7 @@
 # incluido en control(un script del panel) al alcanzar cierta temperatura
 
 
-xterm -T 'TempFreq Log' -fc 5 -geometry 38x3-0-0 -e sh -c '
+xterm -T 'TempFreq_Log' -fc 5 -geometry 38x3-0-0 -e sh -c '
 PATH=$PATH:~/code
 . isnum
 tize -c 2 [ / -c 2 ] / "[l]log/no [i]info []refrescar [q]salir\n\

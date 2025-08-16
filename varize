@@ -33,7 +33,7 @@ varize(){
 local varize_v="" ec=true xx="" tp=/tmp/code_$USER/varize cp=0 ae=false cm="" ln="" rt=""
 # V nombres_variables - ec echo - ln linea - cp campo - tp tmp - rt resto/comodin - ae archivo|comodin - cm campos/comodin - xx comodin
 
-while [ ${#1} -ne 0 ] ; do case $1 in # opciones
+while [ $# -ne 0 ] ; do case $1 in # opciones
 	-e) ec=false ; shift ;;
 	-m)	shift ; varize_v=$@ ; varize_v=${varize_v%% --*}
 		enum -c $varize_v ; shift $(($?+1))
