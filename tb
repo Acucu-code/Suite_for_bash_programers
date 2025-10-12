@@ -17,7 +17,7 @@ local l="$1" a="$2"
 		"$@" "$l"
 		echo
 	done < "$a"
-	echo -n $l # en algun caso es necesario
+	[ ! "$l" ] || "$@" "$l" # en algun caso es necesario
 } || {
 	while read l ; do # lee de tuberia
 		"$@" "$l"
