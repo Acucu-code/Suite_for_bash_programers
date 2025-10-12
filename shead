@@ -1,7 +1,7 @@
 #!/bin/sh
 # oxr 2025 SHEAD V2
 # Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
-# y definir el modo de salida. Puede actuar como 'cat' 'grep' 'head/tail'
+# contar y definir el modo de salida.
 #
 # \\b    (|) shead (-a archivo) [-o archivo] [-t] [-l|-C] [-S SEP] [-n] ···
 # ···   [-f nº|inicioº [finº]] [-z] [-b] [-u] [-P] [-c colorº] [-p|-pp|-s|-ss] ···
@@ -30,7 +30,7 @@
 # '-z'       no hara saltos de linea. En la ultima instancia
 # '--'       fin de opciones, puede ser necesario si filtro es un numero.
 # 'filtro'   texto a encontrar. Entrecomillar si espacios o comodines
-# '-r'       reemplazar.
+# '-r'       reemplazar por 'reemplazo'.
 #
 # Por defecto se muestran todas las lineas y se resaltan las coincidencias.
 # Por 'pre/sufijo' se muestran las lineas con coincidencias sin resaltado. Se
@@ -119,7 +119,7 @@ local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/code_$USE
 shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0 shead_sl='\n' shead_rp=""
 shead_cr=false shead_nr=0 shead_mt=false shead_ne="" shead_mi=false shead_cl=""
 # nm numerar - tx texto - ft filtro - rt resultado - pt parte - md modo - ct contador - sl salto_linea - rp reemplazo - dr devolver_resultados - nr nº_resultados - mt mostrar_todo - nm numerar_lineas - mi multiinstancias - cl color - ne sin estilo
-[ $# -ne 0 ] || { infsh ~/code/shead 3 37 -c 7 filtro ¬ -c 5 Ultima opcion ; return ;}
+[ $# -ne 0 ] || { infsh ~/code/shead 3 38 -c 7 filtro ¬ -c 5 Ultima opcion ; return ;}
 
 # echo "pid_orden(\$$) $$ -- orden(\$0) $0 -- nº_param(\$#) $# -- param(\$@) $@"
 # echo "ultimo_param(\$_) $_ -- pid_ultimo_proc(\$!) $! -- codigo_salida(\$?) $?"
@@ -190,6 +190,7 @@ while : ; do #Gestion de instancias
 		shead_fun
 		[ $shead_ct -lt $ul ] || break
 	done < "$ae"
+	[ ! "$shead_tx" ] || shead_fun # en algun caso es necesario
 	} || {
 	while read shead_tx ; do
 		shead_ct=$((shead_ct+1))

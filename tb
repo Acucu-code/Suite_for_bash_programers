@@ -1,20 +1,29 @@
 #!/bin/sh
-# oxr 2024
-# Captura la salida de una tuberia y se la entrega a un script
+# oxr 2025
+# Captura la salida de una orden o lee de un archivo, y entrega cada linea a un
+# script o comando, que se ejecuta con cada linea recibida.
 #
-# \\b    orden | tb script [argumentos]
+# \\b    (orden |) tb (-a archivo) comando [argumentos]
 #
-# Tras 'script' o 'argumentos' de darse, se colocara la salida de 'orden'.
-# 'script' puede ser un comando que no recoja tuberias como echo o printf.
 
 
 tb(){
-local x=""
-[ $# -eq 0 ] || ! type $1>/dev/null && { infsh ~/code/tb 3 8 ; return ;}
-while read x ; do # lee de la tuberia
-	"$@" "$x"
-	echo
-done
+local l="$1" a="$2"
+[ $# -gt 0 ] || { infsh ~/code/tb 3 6 ; return ;}
+[ $l = -a ] && {
+	shift 2
+	[ $# -gt 0 ] || set -- echo -n
+	while read l ; do # lee de archivo
+		"$@" "$l"
+		echo
+	done < "$a"
+	echo -n $l # en algun caso es necesario
+} || {
+	while read l ; do # lee de tuberia
+		"$@" "$l"
+		echo
+	done
+	}
 }
 
 
