@@ -26,7 +26,7 @@ read x < $nm.slp
 case ${r%% *} in
 o|l|i|h|r|m|d|n|+|-|=|"") send "$r" ops ;;
 aqui) send $tty tty ;;
-q) rm $nm""_log.pid ; send m ops ; $e || rm $nm.pid ; exit ;;
+q) rm $nm""_log.pid ; $e || { send q ops ; sleep 1 ;} ; return ;;
 *) $r ;;
 esac ; done
 ' &

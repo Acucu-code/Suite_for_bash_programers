@@ -57,7 +57,7 @@ tty_ctl(){
 salir(){ # SALIDA
 # trap - INT TERM QUIT KILL ABRT HUP
 	! tty_ctl || [ -e $tmp""_log.pid ] || tize $prg / "Saliendo de $prg"
-	rm $tmp.pid
+	rm $tmp.pid $tmp.ops
 	#echo $c1\\t$c2\\t$c3\\t$c4\\t$c5\\t$c6 >> tempfreq.clases # registro de uso de clases
 	[ "$1" = "r" ] && { >$tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { echo ; exit ;}
 } #
@@ -75,7 +75,7 @@ rdiv(){ # ASIGNA O MUESTRA EL VALOR DE UNA VARIABLE LEIDA DE UN ARCHIVO DIVIDIDA
 info(){ # INFORMACION
 [ $# -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x="$"$i ; echo $i=$x ; done ; return ;}
 [ $# -ne 0 ] || {
-	for i in "OTROS_____" ib ia sl tty cpu pmc pmcn \
+	for i in "OTROS_____" ib ia sl dt tty cpu pmc pmcn prg\
 			TEMPERATURA tmn tp t tmx tc tnmx ta td tf tfc \
 			FRECUENCIA fnmn fmn fmna fmd fp f fm fmx fmxa fmxf fnmx ff \
 			MODULACION mc mp mt mv ma mcr mfr mfa mf ; do
