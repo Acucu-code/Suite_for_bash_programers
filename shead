@@ -38,6 +38,8 @@
 # las lineas coincidentes; si se indica color 'filtro' no puede tener comodines.
 #
 # EN PROCESO - FUNCIONANDO - INCLUIBLE EN OTROS SCRIPTS '. shead'
+#(1) si el archivo tiene una sola linea sin salto de linea, read lee la linea
+# y sale del bucle sin ejecutar su contenido.
 
 
 [ $include_ctl ] || . include ; include tize isnum path
@@ -188,9 +190,10 @@ while : ; do #Gestion de instancias
 		shead_ct=$((shead_ct+1))
 		[ $shead_ct -ge $in ] || continue
 		shead_fun
+		shead_tx="" #(1)
 		[ $shead_ct -lt $ul ] || break
 	done < "$ae"
-	[ ! "$shead_tx" ] || shead_fun # en algun caso es necesario
+	[ ! "$shead_tx" ] || shead_fun #(1)
 	} || {
 	while read shead_tx ; do
 		shead_ct=$((shead_ct+1))
