@@ -1,0 +1,50 @@
+#!/bin/sh
+#oxr 2025
+# Devuelve una porcion de una cadena
+#
+# \\b    trim varname [-p|-s|posº] countº    (solo si se incluyo '. trim')
+#
+# \\b    trim [-n] [-p|-s|posº] countº string
+#
+# 'varname'    Modificara dicha variable
+# '-n'         Usar este modo a pesar de haber incluido el script
+# '-p|-s|posº' Extrae del prefijo, sufijo(por defecto) o desde posº
+# 'countº'     nº de caracteres a extraer
+# 'string'     Cadena a recortar y mostrar
+#
+
+
+[ $include_ctl ] || . include ; include enum # isnum -- 'enum' incluye 'isnum'
+
+
+trim(){
+local trim_v="" trim_s="" o="-s" c="" n="" x="" w=""
+enum -c "$@"
+case $? in
+0|1) infsh ~/code/trim 3 13 ; return ;;
+2) isnum $1 && c=$1 o="-s" || { trim_v=$1 c=$2 ; shift ;} ; shift ;;
+3) isnum $1 && n=$1 c=$2 || { [ ${1#-} = $1 ] && {
+			[ ${2#-} = $2 ] && trim_v=$1 n=$2 c=$3 || trim_v=$1 o=$2 c=$3 ; shift
+		} || o=$1 c=$2 ;} ; shift 2 ;;
+4) [ ${1#-} = $1 ] || {	[ ${2#-} = $2 ] && o=$1 n=$2 c=$3 || o="$1 $2" c=$3	;} ; shift 3 ;;
+*) o="$1 $2" n=$3 c=$4 ; shift 4 ;;
+esac
+o=${o#* }
+[ $# -eq 0 ] && eval trim_s="\$$trim_v" || trim_s="$@"
+# echo ..TRIM=$trim_v..O=$o..N=$n..C=$c..S=$trim_s..
+# return
+[ ${#n} -gt 0 ] && {
+	enum n $((n-1)) ; for n in $n ; do trim_s=${trim_s#?} ; done
+	n=${#trim_s} ; enum n $((n-c)) ; for n in $n ; do trim_s=${trim_s%?} ; done
+} || {
+	n=${#trim_s} ; [ $c -le $n ] && c=$((n-c)) || c=0
+	enum c $c ; for c in $c ; do x=$x"?" ; done
+}
+[ "$o" = "-p" ] && trim_s=${trim_s%$x} || trim_s=${trim_s#$x}
+[ ${#trim_v} -eq 0 ] && echo "$trim_s" || eval "$trim_v"="'$trim_s'"
+}
+
+
+[ ${0##*/} != trim ] || trim "$@"
+
+

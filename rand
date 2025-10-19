@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# Devuelve un numero aleatorio
+#
+# \\b    rand [minº] maxº
+#
+#
+#
+# PASAR A VARIABLE
+#
+
+[ $include_ctl ] || . include ; include trip trim # NO enum - 'trim' incluye 'enum'
+
+rand(){
+local rand=0 t=0 a=0 b=0 c=0 d=0 n=$1 m=$2 l=${#2}
+[ $# -gt 0 ] || { infsh ~/code/rand 3 5 ; return ;}
+
+[ $l -eq 0 ] && n=0 m=$1 l=${#m}
+
+read t < /proc/uptime
+a=${t##*.} b=${t% *} b=${b#*.}
+
+case $l in
+1) trim a 1 ;;
+2) ;;
+3) a=$a$b ; trim a 3 ;;
+4) a=$a$b ; ;;
+*)	trip t '.??'
+	c=${t% *} d=${t#* } c=$((c*d)) d=${#c} rand=$c
+	trim rand $((l-4))
+	a=$a$rand$b
+;;
+esac
+
+trip -p a 0
+
+[ ${#a} -gt 0 ] || a=$((n+((m-n)/2 )))
+
+[ $a -ge $n ] || a=$((a+n))
+
+[ $a -le $m ] || a=$((a-m+n-1))
+
+echo -n $a
+}
+
+
+[ ${0##*/} != rand ] || rand $@
