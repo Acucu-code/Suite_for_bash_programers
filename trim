@@ -18,9 +18,8 @@
 
 
 trim(){
-local trim_v="" trim_s="" o="-s" c="" n="" x="" w=""
-enum -c "$@"
-case $? in
+local trim_v="" trim_s="" o="-s" c="" n="" trim_x="" w=""
+case $# in
 0|1) infsh ~/code/trim 3 13 ; return ;;
 2) isnum $1 && c=$1 o="-s" || { trim_v=$1 c=$2 ; shift ;} ; shift ;;
 3) isnum $1 && n=$1 c=$2 || { [ ${1#-} = $1 ] && {
@@ -38,9 +37,9 @@ o=${o#* }
 	n=${#trim_s} ; enum n $((n-c)) ; for n in $n ; do trim_s=${trim_s%?} ; done
 } || {
 	n=${#trim_s} ; [ $c -le $n ] && c=$((n-c)) || c=0
-	enum c $c ; for c in $c ; do x=$x"?" ; done
+	enum c $c ; for c in $c ; do trim_x=$trim_x"?" ; done
 }
-[ "$o" = "-p" ] && trim_s=${trim_s%$x} || trim_s=${trim_s#$x}
+[ "$o" = "-p" ] && trim_s=${trim_s%$trim_x} || trim_s=${trim_s#$trim_x}
 [ ${#trim_v} -eq 0 ] && echo "$trim_s" || eval "$trim_v"="'$trim_s'"
 }
 
