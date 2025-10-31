@@ -1,0 +1,33 @@
+Usaremos un arpegio a dos dedos unisono, la melodia en si con el dedo corazon, y con el indice la cuerda inmediatamente superior.
+
+Los bajos coinciden con los puntos de compas, en el ultimo toque cuando haya repeticion. Seran 6ª, 5ª o 4ª cuerda segun el acorde.
+
+
+1ª parte
+
+   .    .  .  .      .            . .  .
+LA 3² 2 1² 1² 2²     3² 2 1   MI{ 1 1² 2²
+
+.    .   .   .       .                 . .  .
+3² 2 12² 12² 23²     3² 20 12 }   ½C2{ 1 1² 2²
+
+.       .  .   .       .            .  .   .
+3² 2 23 13 13² 23²     3² 20 23 +21 13 13² 10² }
+
+    .         .   .                     . .
+SIm 3² 2 1 MI 12      [31 24] 2 1 ½C5{ 14   10}
+
+     .     .          . .
+MI 1 22 20 12 10   LA 3 3³
+
+
+2ª parte
+
+½C2 13 12 +21 12 10² 1 _½C1+21 1² _½C2+21 1²
+
+[31] 2² 22 20 +42 33 -33 2 ½C2 1 23
+
+13 12 +21 12 10² 1 12 ½C5 12 10²
+
+C0+31 1 22² 20 12 10 LA 3 3² 3
+
