@@ -46,7 +46,7 @@ This is a suite because most scripts depend on others. They use 'include', which
 manages inclusion. Some only work if included, either with 'include' or directly
 with '. script'.
 
-A call to '. include varize check infsh' will include all scripts except 'fin'
+A call to '. include varize check rand infsh' will include all scripts except 'fin'
 that is not necessary, 'tempfreq' that is not includable, and 'tempfreq_log'
 that opens a window.
 
