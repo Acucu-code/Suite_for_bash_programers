@@ -2,11 +2,12 @@
 # oxr 2025
 # Separa instancias y puede ejecutar ordenes compuestas con cada una de ellas
 #
-# \\b    sep [+|-N] [-E|-L]|[-s|-S SEP] [-O 'orden..$sep_C..orden..'] -A archivo|instancias
+# \\b    sep [-E|-L|-T]|[-s|-S SEP] [-R] [(+|-)N] [-O 'orden..$sep_C..orden..'] -A archivo|instancias
 #
 # Opciones generales:
 # '-A' lee instancias de archivo
 # '-O' orden/es a ajecutar por cada instancia; de no darse, estas se mostraran.
+# '-R' Sin retorno de carro
 # '$sep_C' literal, es la variable que contiene cada instancia
 # 'instancias' puede ser: $insts|instSEPinst...|o nada si se lee desde archivo
 # Opciones de instancia:
@@ -16,6 +17,7 @@
 # '-s' separador, se tomara como entre espacios,' SEP '
 # '-S' separador, sin espacios 'SEP'
 # '-N' no strip, mantener espacios extra y tabuladores. '+N' no, por defecto
+# '--' fin de opciones
 #
 # \\b    sep -s $S -O '$L && I=$I$sep_C$S ; parp_fun $sep_C ; $W || R=$R$E' "$@"
 #
@@ -52,20 +54,21 @@
 
 
 sep(){
-local sp=" " it="" sep_C="" or="" st=false tb='	' sl='
+local sp=" " it="" sep_C="" sep_or="" st=false rt="" tb='	' sl='
 '
-# sep_C comodin - sp separador - or orden - it instancias - st strip  - tb tabulador - sl salto_de_linea
+# sep_C comodin - sp separador - sep_or orden - it instancias - st strip  - tb tabulador - sl salto_de_linea
 [ $# -ne 0 ] || { infsh ~/code/sep 3 20 -c 2 -b sep_C ; return ;}
 
 until [ $# -eq 0 ] ; do case $1 in # opciones generales
 	-A) while read sep_C ; do it="$it$sep_C$sl" ; done < "$2" ; it=${it%$sl} ; shift 2 ;;
-	-O) or="$2" ; shift 2 ;;
+	-O) sep_or="$2" ; shift 2 ;;
 	-s) sp=" $2 " ; shift 2 ;;
 	-S) sp="$2" ; shift 2 ;;
 	-L) sp="$sl" ; shift ;;
 	-T) sp="$tb" ; shift ;;
 	-E) sp=" " ; shift ;;
 	-N) st=true ; shift ;;
+	-R) rt="-n" ; shift ;;
 	*) [ ${#it} -ne 0 ] || it=$@ ; break ;;
 esac ; done
 
@@ -79,12 +82,13 @@ until [ ${#sep_C} = ${#it} ] ; do # instancias
 		-E) sp=" " ; shift ; it=$@ ;;
 		-N) st=true ; shift ; it=$@ ;;
 		+N) st=false ; shift ; it=$@ ;;
+		--) shift ; it=$@ ; break ;;
 		*) break ;;
 	esac ; done
 
 	sep_C=${it%%$sp*} it=${it#*$sp}
 
-	[ ${#or} -ne 0 ] && eval "$or" || { $st && echo "$sep_C" || echo $sep_C ;}
+	[ ${#sep_or} -ne 0 ] && eval "$sep_or" || { $st && echo $rt "$sep_C" || echo $rt $sep_C ;}
 done
 }
 

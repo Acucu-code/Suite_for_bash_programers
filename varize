@@ -3,7 +3,7 @@
 # Asigna a una o mas variables la salida de una orden o registros de un archivo;
 #  por linea y campo. Incluir '. varize' para que la asignacion surta efecto
 #
-# \\b    varize [-e] (-a archivo) [-l lº] [-n [cº [rº]]] [-m] var [var... [--]] (orden)
+# \\b varize [-e] (-a archivo) [-l lº] [-n [cº [rº]]] {-m} var {var... [--]} (orden)
 #
 # '-e'  muestra el valor
 # '-a'  archivo del que leer, excluye 'orden' y viceversa
@@ -30,8 +30,8 @@
 
 varize(){
 [ $# -gt 1 ] || { infsh ~/code/varize 3 22 ; return ;}
-local varize_v="" ec=true xx="" tp=/tmp/code_$USER/varize cp=0 ae=false cm="" ln="" rt=""
-# V nombres_variables - ec echo - ln linea - cp campo - tp tmp - rt resto/comodin - ae archivo|comodin - cm campos/comodin - xx comodin
+local varize_v="" varize_c="" ec=true ln="" cp=0 rt="" ae=false varize_x="" tp=/tmp/code_$USER/varize
+# V nombres_variables - c campos/comodin - ec echo - ln linea - cp campo - rt resto/comodin - ae archivo|comodin - varize_x comodin - tp tmp
 
 while [ $# -ne 0 ] ; do case $1 in # opciones
 	-e) ec=false ; shift ;;
@@ -50,11 +50,11 @@ $ae || "$@" > $tp # ejecucion orden
 
 [ ${#ln} -eq 0 ] || { # linea
 	[ $ln -eq 0 ] && { # ultima linea
-		while read ae ; do cm=$xx xx=$ae ; done < $tp
-		[ ${#xx} -eq 0 ] && ln=$cm || ln=$xx
+		while read ae ; do ln=$varize_x varize_x=$ae ; done < $tp # por ultimo salto de linea
+		[ ${#varize_x} -eq 0 ] || ln=$varize_x
 	} || { # tal linea
-		enum cm $ln
-		for xx in $cm ; do read ln ; done < $tp
+		enum ae $ln
+		for varize_x in $ae ; do read ln ; done < $tp
 	}
 	echo "$ln" > $tp
 }
@@ -66,10 +66,9 @@ $ae || "$@" > $tp # ejecucion orden
 		eval unset $varize_v # puede dar el valor que tenia antes
 		return
 	} || { # primer campo
-		cm="" # portara el resultado
 		enum ae $((cp-1))
-		for xx in $ae ; do cm=$cm'* ' ; done
-		cm="${ln#$cm}"
+		for varize_x in $ae ; do varize_c=$varize_c'* ' ; done
+		varize_c="${ln#$varize_c}"
 		[ ${#rt} -ne 0 ] || { # por variables
 				enum -c $varize_v ;
 				rt=$((($?+cp)-1)) ;
@@ -77,17 +76,17 @@ $ae || "$@" > $tp # ejecucion orden
 		enum -c $ln
 		enum ae $(($?-rt))
 		rt=""
-		for xx in $ae ; do rt=$rt' *' ; done
-		cm="${cm%$rt}"
-		echo "$cm" > $tp
+		for varize_x in $ae ; do rt=$rt' *' ; done
+		varize_c="${varize_c%$rt}"
+		echo "$varize_c" > $tp
 	}
 }
 
 eval read $varize_v < $tp # asignacion a variables
 
 $ec || { # echo
-	for xx in $varize_v ; do eval cm="\$$xx"
-		echo "$cm" ;
+	for varize_x in $varize_v ; do eval varize_c="\$$varize_x"
+		echo "$varize_c" ;
 	done
 }
 }
