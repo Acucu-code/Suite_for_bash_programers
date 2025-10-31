@@ -3,25 +3,31 @@
 # Captura la salida de una orden o lee de un archivo, y entrega cada linea a un
 # script o comando, que se ejecuta con cada linea recibida.
 #
-# \\b    (orden |) tb (-a archivo) comando [argumentos]
+# \\b    (|) tb [-n] (-a archivo) comando [argumentos]
 #
+# '-n'    no 'echo' tras cada ejecucion desde tuberia
+#
+#
+#(1) si el archivo tiene una sola linea, sin salto de linea; read lee la linea
+# y sale del bucle sin ejecutar su contenido.
 
 
 tb(){
-local l="$1" a="$2"
-[ $# -gt 0 ] || { infsh ~/code/tb 3 6 ; return ;}
-[ $l = -a ] && {
-	shift 2
-	[ $# -gt 0 ] || set -- echo -n
+local l="" a="" n=true
+# echo -- $1 -- $2 -- $3 -- $4 --
+[ $# -gt 0 ] || { infsh ~/code/tb 3 8 ; return ;}
+[ $1 = "-n" ] && shift || n=false
+[ $1 = "-a" ] && {
+	a="$2"
+	[ $# -gt 2 ] || set -- echo # a falta de comando
 	while read l ; do # lee de archivo
 		"$@" "$l"
-		echo
 	done < "$a"
-	[ ! "$l" ] || "$@" "$l" # en algun caso es necesario
+	[ ! "$l" ] || "$@" "$l" #(1)
 } || {
 	while read l ; do # lee de tuberia
 		"$@" "$l"
-		echo
+		$n || echo
 	done
 	}
 }

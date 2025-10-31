@@ -7,7 +7,7 @@
 #
 # 'archivo'    del que leer las
 # 'inicio fin' lineas a mostrar
-# 'estilo'     [-c (0-7 ó 00-77 para color/fondo)] [-b] bold [-p] parpadeo
+# 'estilo'     [-c (0-7) ó (00-77) para color/fondo] [-b] bold [-p] parpadeo
 # 'objetivo'   a colorear. "Entrecomillar", o escapar caracteres especiales '⧵c'
 # 'SEP'        '¬' separador de instancias.
 #
@@ -23,7 +23,7 @@ infsh(){
 local a=$1 i=$2 f=$3 o="¬"
 shift 3
 [ $# -eq 0 ] || o="¬ $@"
-shead -n -a $a $i $f -p - \# | tb tize -s ¬ -c 3 "[" ¬ -c 3 "]" ¬ -c 2 \" ¬ -c 2 "'" ¬ -c 7 $ ¬ -c 6 "º" ¬ -c 6 "+" ¬ -c 6 "-" ¬ -c 6 "=" ¬ -c 5 "<" ¬ -c 5 ">" ¬ -c 1 -b "{" ¬ -c 1 -b "}" ¬ -c 4 "(" ¬ -c 4 ")" ¬ -c 6 "|"  ¬ -c 6 "&" ¬ -c 2 "···" ¬ -c 7 -b -u Opciones generales ¬ -c 7 -b -u Opciones de instancia ¬ -c 6 -b SEP ¬ -c 6 "/" ¬ -c 6 "⧵" ¬ -c 6 "∕" $o ¬
+shead -n -a $a $i $f -p - \# | tb tize -s ¬ -c 3 "[" ¬ -c 3 "]" ¬ -c 2 \" ¬ -c 2 "'" ¬ -c 7 $ ¬ -c 6 "º" ¬ -c 6 "+" ¬ -c 6 "-" ¬ -c 6 "=" ¬ -c 5 "<" ¬ -c 5 ">" ¬ -c 5 -b "{" ¬ -c 5 -b "}" ¬ -c 4 "(" ¬ -c 4 ")" ¬ -c 6 "|"  ¬ -c 6 "&" ¬ -c 2 "···" ¬ -c 7 -b -u Opciones generales ¬ -c 7 -b -u Opciones de instancia ¬ -c 6 -b SEP ¬ -c 6 "/" ¬ -c 6 "⧵" ¬ -c 6 "∕" $o ¬
 # las dos untimas barras son sustitutas de las reales
 }
 
