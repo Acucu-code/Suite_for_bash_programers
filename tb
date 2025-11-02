@@ -23,13 +23,13 @@ local l="" a="" n=true
 	while read l ; do # lee de archivo
 		"$@" "$l"
 	done < "$a"
-	[ ! "$l" ] || "$@" "$l" #(1)
 } || {
 	while read l ; do # lee de tuberia
 		"$@" "$l"
 		$n || echo
 	done
 	}
+[ ! "$l" ] || "$@" "$l" #(1)
 }
 
 
