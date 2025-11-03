@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="charset" content="UTF-8">
+<meta name="revisit-after" content="7 days">
+<meta name="language" content="es">
+<meta name="distribution" content="global">
+<meta name="resource-type" content="manual">
+<meta name="date" content="2025">
+<meta name="author" content="acuku">
+<meta name="keywords" content="shell bash tools include temperature-control sh text-coloring text-filtering text-styling">
+<meta name="description" content="This suite contains sh scripts designed to complement programming with commands that, except in rare and forced cases, only use sh built-in commands.">
+<link rel="shortcut icon" href="imagen/favicon.png" type="image/x-icon">
+<link rel="author" href="mailto:oxr@gmx.es">
+<style>
+body{margin:1em 2.5em 1em 5em;}
+pre{padding:1em;border:1px solid black;width:auto;overflow-x:auto;}
+span{display:none;}
+pre:hover span{display:block;}
+</style>
+<title>Suite for bash programers</title>
+</head>
+<body>
+<h1 title="Actualizado el 3/11/2025">Suite for bash programers</h1>
+<pre><b>CHECK</b><br><span>
+Chequeo de opciones
+Las acciones son [s]si [enter|n]no [q]quitar/cancelar
+La salida, se recoge con '$?' ,si>0 no>1 cancelar>2 quitar>3
+
+    check [-] texto && ... || ...
+
+'-'    No termina al pulsar [q] cuando fue incluido en un script o bash con
+       '. check', en bash se cerraria el terminal !!
+</span></pre>
+<pre><b>INCLUDE</b><br><span>
+Gestiona la inclusion de codigo a un script o al shell. Las ventajas de usarlo
+en vez de '. archivo' directamente, es que controla que archivos han sido
+incluidos, ya por otro archivo previamente incluido o por el brutal caso de que
+dos archivos se incluyan mutuamente; evitando asi la recursion de inclusiones
+en el primer caso, mas un bucle infinito en el segundo. Todo esto vale para
+inclusion en bash, menos controlar las inclusiones mutuas.
+
+Desde linea de comandos de 'bash':
+
+    . include [-l] script_1 [script_2 ...] # la prinera vez, luego sin '. '
+
+'-l' Para ver informacion del proceso de inclusion
+
+En script 'sh':
+
+    [ $include_ctl || ] . include ; include script_1 [script_2 ...]
+
+Lo de '$include_ctl' es para ahorrar procesamiento,
+</span></pre>
+<pre><b>INFSH</b><br><span>
+Da color a la cabecera de un script, por defecto da color a algunos objetivos
+pero se pueden indicar otros
+
+	infsh archivo inicio fin [[estilo] objetivo SEP [estilo] objetivo ... ]
+
+'archivo'    del que leer las
+'inicio fin' lineas a mostrar
+'estilo'     [-c (0-7) ó (00-77) para color/fondo] [-b] bold [-p] parpadeo
+'objetivo'   a colorear. "Entrecomillar", o escapar caracteres especiales '⧵c'
+'SEP'        '¬' separador de instancias.
+
+'⧵⧵b' hace que se respeten los espacios|tabs al inicio de un comentario
+</span></pre>
+<pre><b>ISNUM</b><br><span>
+Indica si es un numero.
+
+	isnum esto
+
+Admite numeros con y sin signo, enteros y, decimales con y sin parte entera o decimal
+nº +nº -nº nº.mº +nº.mº -nº.mº .nº +.nº -.nº nº. +nº. -nº.
+Va a retornar 0(true) si es un numero 2(error/false) si no es un numero y 1(false) si no se dio nada.
+</span></pre>
+<pre><b>ENUM</b><br><span>
+Enumera una cantidad en sus integrantes o cuenta las palabras de una frase
+
+    enum [-e] [var] -c frase | var nº [cº]
+
+'-c'  devuelve el numero de palabras de la frase, 'var' es opcional
+'var' nombre de la variable a la que asignar el resultado
+'nº'  cantidad a enumerar
+'cº'  comienzo de la enumeracion, 0 por defecto
+'-e'  tambien muestra el resultado
+
+    enum x 3 ; for i in $x ; do ... ; done
+
+    enum -c $frase ; shift $?
+
+Debe incluirse '. enum' para que la asignacion a variable surta efecto
+</span></pre>
+<pre><b>FIN</b><br><span>
+gestion de salida del sistema por tiempo o temperatura
+
+    fin [[-+]t [nº]] [[-p]oweroff [-h]ibernate [-s]leep [-r]eboot]
+
+'-t|+t' cuando la temperatura baje o suba hasta nº, sino en nº o 300 segundos
+'-[p|h|s|r]' accion a realizar, sino hibernate
+gestion de salida del sistema por tiempo o temperatura
+
+    fin [[-+]t [nº]] [[-p]oweroff [-h]ibernate [-s]leep [-r]eboot]
+
+'-t|+t' cuando la temperatura baje o suba hasta nº, sino en nº o 300 segundos
+'-[p|h|s|r]' accion a realizar, sino hibernate
+</span></pre>
+<pre><b>PARP</b><br><span>
+Generador de texto posicionable, con estilos y repeticiones. Admite multiples
+instancias e inclusion de archivos de instancias y de secuencias de escape.
+
+	parp [-l] [-s SEP] [opciones] [--] Texto [SEP nueva instancia [SEP ...]]
+
+Parp acepta multiples opciones, con las formas:
+(S)imbolo: S S+ S- S= SS
+S SS Opciones directas: [¿ ! ¡ ¡¡ ç ^ v + - , ,, $ . º = : % _ __ @ --]
+S+ S- S= SS Para fijar un valor: [ç+ ç= ^+ v+ ++ +- ,+ ,- ,= +$ -$ ^^ vv]
+(-L)etra: Definir espaciado: [-z -w -W] Log: [-l] Incluir valor: [-s -c -f -e -r -p -t -a -v]
+
+PANTALLA: ! invierte_color ¿ revierte ¡ borra ¡¡ y buffer ¡- borra_cursor_arriba ¡+ abajo
+CURSOR: ç inicio [ç= filaº columnaº] [ç+ columnaº] ^ [^+ arribaº] v [v+ abajoº] + [++ adelanteº] - [+- atrasº]
+SALTOS: ,, ahora , final [,+ lineasº] [,- lineasº] [,= lineaº] $ tabulacion [+$ tabsº] [-$ tabsº] [^^ scrollº] [vv scrollº]
+ESTILO: = grueso_normal º brillo_normal . apagado : parpadeante % inverso
+ESTILO: _ subrayado __ subrayado_doble @ cursiva -c[(0-7) color (00-77) color/fondo] -f (0-7) fondo
+FACILIDAD: Repetir [-e espaciosº] [-r nº caracte(r)]  [-p nº palabras --] Log [-l]
+FACILIDAD: Incluir [-t palabras --] [-a archivo_instancias] [-v archivo_escapes]
+FACILIDAD: Separar: Instancias [-s SEP] Espaciar: Si [-w] No [-z] Extra [-W] Fin_opciones [--]
+
+Los componentes de una instancia comparten estilo, para otro estilo otra instancia.
+Las opciones [-z -w -W] trascienden instancias.
+Las opciones [-e -r -p -t -a -v] se pueden repetir en la misma instancia.
+El SEParador de instancias por defecto es '/'
+
+El Log '/tmp/code_$USER/parp.log' de darse la opcion '-l', contiene la salida del programa,
+utilizable para crear archivos de instancias y de escapes.
+Las instancias se pueden editar facilmente. Y las secuencias de escape se
+pueden usar directamente con 'cat'.
+</span></pre>
+<pre><b>PATH</b><br><span>
+convierte una ruta parcial en absoluta y se la asigna a una variable
+
+    path [-e] var ruta
+
+'-e'    tambien muestra el resultado
+'var'   variable que contendra la ruta absoluta
+'ruta'  ruta parcial, o no
+
+Para la asignacion a variable debe ser incluido '. path'
+</span></pre>
+<pre><b>RAND</b><br><span>
+Devuelve un numero aleatorio
+
+    rand [minº] maxº
+</span></pre>
+<pre><b>SHEAD</b><br><span>
+Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
+contar y definir el modo de salida.
+
+    (|) shead (-a archivo) [-o archivo] [-t] [-l|-C] [-S SEP] [-n] ···
+···   [-f nº|inicioº [finº]] [-z] [-b] [-u] [-P] [-c colorº] [-p|-pp|-s|-ss] ···
+···    [-|!] [--] filtro [-r reemplazo] [SEP nueva instancia [SEP ...]]
+
+Opciones generales:
+'-a'       lee de archivo sino de la salida standard '|', excluyentes entre si
+'-o'       salida a otro archivo
+'-t'       devolvera todas las lineas en modo pre/sufijo
+'-l'       mostrara el nº de linea
+'-C'       devolvera el nº de lineas concordantes, si '!' las resultantes; por
+           pre/sufijo siempre las concordantes
+'-S'       separador, por defecto es '/'
+'-n'       sin estilo
+'-f'       filtrara las nº ultimas lineas. Ultima opcion general
+'inicio fin' lineas a examinar, todas por defecto. Ultima opcion general
+Opciones de instancia:
+'-p|-s'    filtrara por prefijo o sufijo y actuara sobre ellos
+'-pp|-ss'  idem pero actuara en toda la linea
+'-|-q'     no mostrara el filtro.
+'!|-N'     no mostrara las lineas con coincidencias.
+'-c'       da color al filtro o su reemplazo, color[0-7] color/fondo[00-77]
+'-b'       no bold
+'-u'       subrayado
+'-P'       parpadeante
+'-z'       no hara saltos de linea. En la ultima instancia
+'--'       fin de opciones, puede ser necesario si filtro es un numero.
+'filtro'   texto a encontrar. Entrecomillar si espacios o comodines
+'-r'       reemplazar por 'reemplazo'.
+
+Por defecto se muestran todas las lineas y se resaltan las coincidencias.
+Por 'pre/sufijo' se muestran las lineas con coincidencias sin resaltado. Se
+puede filtrar por contenido con '-p *filtro' o '-s filtro*' para mostrar solo
+las lineas coincidentes; si se indica color 'filtro' no puede tener comodines.
+</span></pre>
+<pre><b>SEP</b><br><span>
+Separa instancias y puede ejecutar ordenes compuestas con cada una de ellas
+
+    sep [-E|-L|-T]|[-s|-S SEP] [-R] [(+|-)N] [-O 'orden..$sep_C..orden..'] -A archivo|instancias
+
+Opciones generales:
+'-A' lee instancias de archivo
+'-O' orden/es a ajecutar por cada instancia; de no darse, estas se mostraran.
+'-R' Sin retorno de carro
+'$sep_C' literal, es la variable que contiene cada instancia
+'instancias' puede ser: $insts|instSEPinst...|o nada si se lee desde archivo
+Opciones de instancia:
+'-E' separador espacio ' ', por defecto
+'-L' separador salto de linea
+'-T' separador tabulador
+'-s' separador, se tomara como entre espacios,' SEP '
+'-S' separador, sin espacios 'SEP'
+'-N' no strip, mantener espacios extra y tabuladores. '+N' no, por defecto
+'--' fin de opciones
+</span></pre>
+<pre><b>TB</b><br><span>
+Captura la salida de una orden o lee de un archivo, y entrega cada linea a un
+script o comando, que se ejecuta con cada linea recibida.
+
+    (|) tb [-n] (-a archivo) comando [argumentos]
+
+'-n'    no 'echo' tras cada ejecucion desde tuberia
+</span></pre>
+<pre><b>TEMPFREQ</b><br><span>
+Controla la temperatura con cpufreq schedutil a traves de scaling_max_freq.
+
+    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ] &
+
+Al menos se debe dar una opcion:
+'intervalo' de refresco en segundos
+'repeticiones' nº repeticiones u ocurrencias para aplicar la modulacion
+'amplitud' rango de modulacion x ±100Mz
+'temperaturaº' a no sobrepasar en esceso
+'log' - informacion detallada true/false
+
+Esta pensado para ir en background, funcionando de manera automatica.
+
+    tempfreq 10 0 2 0 true &    # '0' no modifica
+
+pone intervalo a 10”, amplitud de modulacion a ⇐200 Mz y activa el log.
+
+Una vez iniciado se dispone de las siguientes opciones:
+'q' termina el programa
+'l' muestra/oculta el log
+'i' muestra informacion
+'h' la ayuda
+
+    tempfreq i    # muestra informacion sobre el programa, variables y log.
+
+Cuando es gestionado por 'tempfreq_log', 'aqui' traera su salida al tty.
+
+A mas intervalo y mas repeticiones, mas estabilidad de frecuencia, pero mayor
+riesgo de sobrecalentamiento.
+A mayor amplitud, mas rapido el ajuste, pero menos margen de operacion.
+</span></pre>
+<pre><b>TEMPFREQ_LOG</b><br><span>
+Ventana para tempfreq con opciones de control
+</span></pre>
+<pre><b>TIPO</b><br><span>
+Averigua el tipo de un comando y devuelve (0|true) para las funciones y
+(1-5|false) para el resto:
+
+funcion(0),alias(1),palabra_clave(2),orden_interna(3),archivo(4),no existe(5).
+
+    tipo [-e] comando && es_funcion... || otros...
+
+    tipo comando ; [ $? -lt 5 ] || echo "$1 no es un comando reconocido"
+
+'-e'    muestra el tipo
+
+Debe incluirse antes '. tipo' para identificar funciones ,alias y archivos
+</span></pre>
+<pre><b>TIZE</b><br><span>
+Da estilo, elimina ,reemplaza o cuenta ocurrencias en un texto
+
+    tize [-e] [-s SEP] [-C] [-v var] [-a archivo] ···
+···   [-n]|[[-c nº -f nº] [-b] [-p] [-u]] ···
+···    [-q] objetivo [-r reemplazo] [SEP nueva instancia...] [--] SEP texto
+
+Opciones generales:
+'-s'    SEParador de instancias, '/' por defecto. Antes que '-a'.
+'-C'    cuenta las coincidencias.
+'-v'    nombre de variable a asignar el resultado.
+'-a'    lee de archivo, separadores en archivo diferente al de instancias.
+'-e'    'echo' al final.
+Opciones de instancia:
+'-c|-f' formato de color y fondo: -c (0-7 ó mas fondo 00-77) -f (0-7).
+'-b'    no bold.
+'-p'    parpadeante.
+'-u'    subrayado
+'-n'    sin estilo.
+'-q'    quita ocurrencias.
+'-r'    reemplaza ocurrencias.
+'--'    fin de opciones, en caso de ser necesario.
+
+Para la asignacion a variable, incluir: '. tize'
+En 'texto', si no '-n', se colorearan todas las ocurrencias de 'objetivo' o
+'reemplazo'. Si no se da 'color' o 'fondo' estos seran verde y normal.
+Si va a colorear un solo caracter pongalo en la primera instancia, queriendo
+colorear mas, puede fallar, por los caracteres de las secuencias de escape
+Los abarcadores '[',']','{' y '}' cada uno en una instancia y en ese orden
+Otros caracteres especiales como ')' entrecomillarlos "(" o escaparlos \(
+</span></pre>
+<pre><b>TRIM</b><br><span>
+Devuelve una porcion de una cadena
+
+    trim varname [-p|-s|posº] countº    (solo si se incluyo '. trim')
+
+    trim [-n] [-p|-s|posº] countº string
+
+'varname'    Modificara dicha variable
+'-n'         Usar este modo a pesar de haber incluido el script
+'-p|-s|posº' Extrae del prefijo, sufijo(por defecto) o desde posº
+'countº'     nº de caracteres a extraer
+'string'     Cadena a recortar y mostrar
+</span></pre>
+<pre><b>TRIP</b><br><span>
+Elimina caracteres o unifica repeticiones en una cadena
+
+    trip [-u] [-p|-s|-m] varname chars    (solo si se incluyo '. trip')
+
+    trip [-n] [-u] [-p|-s|-m] chars string
+
+'-u'         Unifica en vez de eliminar
+'-n'         Usar este modo a pesar de haber incluido el script
+'-p|-s|-m'   Actua al principio ,final o en medio, por defecto toda la cadena
+'varname'    Modificara dicha variable
+'chars'      Caracteres a retirar
+'string'     Cadena a modificar y mostrar
+
+    user$ trip -u "⧵t" "/dev/sda1				ext3 ..."
+    /dev/sda1	ext3 ...
+</span></pre>
+<pre><b>VARIZE</b><br><span>
+Asigna a una o mas variables la salida de una orden o registros de un archivo;
+por linea y campo. Incluir '. varize' para que la asignacion surta efecto
+
+ varize [-e] (-a archivo) [-l lº] [-n [cº [rº]]] {-m} var {var... [--]} (orden)
+
+'-e'  muestra el valor
+'-a'  archivo del que leer, excluye 'orden' y viceversa
+'-n'  Reparte por cºampos hasta rº, o asigna a variables declaradas si no rº.
+···    Si rº=0, habra reparto hasta el final; si rº, y hay resto, a la ultima.
+'-l'  lee de esa linea. Si no -n, se repartira entre las variables.
+···    Si lº=0 sera la ultima linea.
+'-m'  multiples variables '--' fin de variables
+'var' nombre de variable a asignar
+'orden' no puede tener tuberias '|', ignora el entrecomillado
+
+    varize -e -m p n -- pgrep -l -r R
+
+    varize -l 2 u df -h --output=used ; echo $u
+
+    varize -e -n 2 3 -m x y -- echo no si tambien tampoco
+</span></pre>
+</body>
+</html>
