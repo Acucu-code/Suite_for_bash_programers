@@ -14,10 +14,10 @@
 <link rel="shortcut icon" href="imagen/favicon.png" type="image/x-icon">
 <link rel="author" href="mailto:oxr@gmx.es">
 <style>
-body{margin:1em 2.5em 1em 5em;}
-pre{padding:1em;border:1px solid black;width:auto;overflow-x:auto;}
-span{display:none;}
-pre:hover span{display:block;}
+	body{margin:1em 2.5em 1em 5em;}
+	pre{padding:1em;border:1px solid black;width:auto;overflow-x:auto;}
+	span{display:none;}
+	pre:hover span{display:block;}
 </style>
 <title>Suite for bash programers</title>
 </head>
@@ -55,7 +55,8 @@ In a 'sh' script:
 The use of '$include_ctl' is to save processing.
 </span></pre>
 <pre><b>INFSH</b><br><span>
-Adds color to a script header; by default, it colors some targets, but you can specify others.
+Adds color to a script header; by default, it colors some targets, but you can
+specify others.
 
 	infsh file start end [[style] target SEP [style] target ... ]
 
@@ -106,7 +107,8 @@ System shutdown management by time or temperature
 '-[p|h|s|r]' action to perform, otherwise hibernate
 </span></pre>
 <pre><b>PARP</b><br><span>
-Positionable text generator with styles and repetitions. Supports multiple instances and the inclusion of instance files and escape sequences.
+Positionable text generator with styles and repetitions. Supports multiple
+instances and the inclusion of instance files and escape sequences.
 
 	parp [-l] [-s SEP] [options] [--] Text [SEP new instance [SEP ...]]
 
@@ -250,7 +252,8 @@ Once started, the following options are available:
 
 	tempfreq i # displays information about the program, variables, and log.
 
-A longer interval and more repetitions result in greater frequency stability, but a higher risk of overheating.
+A longer interval and more repetitions result in greater frequency stability,
+but a higher risk of overheating.
 A larger amplitude allows for faster tuning, but reduces the operating range.
 </span></pre>
 <pre><b>TEMPFREQ_LOG</b><br><span>
@@ -337,23 +340,18 @@ Remove characters or merge repetitions in a string
 </span></pre>
 <pre><b>VARIZE</b><br><span>
 Assigns the output of a command or records from a file to one or more variables;
-
 by line and field. Include '. varize' for the assignment to take effect.
 
 	varize [-e] (-a file) [-l lº] [-n [cº [rº]]] {-m} var {var... [--]} (command)
 
 '-e' displays the value.
 '-a' specifies the file to read from, excluding 'command' and vice versa.
-'-n' distributes across fields up to rº, or assigns to declared variables if rº is not present.
-
-If rº=0, the distribution will continue until the end; if rº is present and there
-is a remainder, it will be assigned to the last field.
-
+'-n' distributes across fields up to rº, or assigns to declared variables if rº
+	is not present. If rº=0, the distribution will continue until the end; if rº
+	is present and there is a remainder, it will be assigned to the last field.
 '-l' reads from that line. Otherwise, it will be distributed among the variables.
-
-If lº=0, it will be the last line.
-
-``` '-m' multiple variables '--' end of variables
+```	If lº=0, it will be the last line.
+'-m' multiple variables, '--' end of variables
 'var' variable name to assign
 'order' cannot contain pipes '|', ignores quotes
 
