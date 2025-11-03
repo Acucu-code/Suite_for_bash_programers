@@ -52,3 +52,5 @@ that opens a window.
 
 To obtain information about a command, it is usually enough to run it without
 any options, currently only in Spanish.
+
+For english manual view  https://github.io/Acucu-code/Suite_for_bash_programers/
