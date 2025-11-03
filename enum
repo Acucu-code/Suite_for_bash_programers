@@ -1,7 +1,6 @@
 #!/bin/sh
 # oxr 2025
 # Enumera una cantidad en sus integrantes o cuenta las palabras de una frase
-# Debe incluirse '. enum' para que la asignacion a variable surta efecto
 #
 # \\b    enum [-e] [var] -c frase | var nº [cº]
 #
@@ -15,6 +14,7 @@
 #
 # \\b    enum -c $frase ; shift $?
 #
+# Debe incluirse '. enum' para que la asignacion a variable surta efecto
 # EN PROCESO - FUNCIONA - INCLUIR
 
 
@@ -23,7 +23,7 @@
 
 enum(){
 local enum_v="" enum_n=0 enum_c=0 enum_r="" enum_e=false
-[ $# -ne 0 ] || { infsh ~/code/enum 3 16 ; return ;}
+[ $# -ne 0 ] || { infsh ~/code/enum 3 17 ; return ;}
 
 while [ $# -ne 0 ] ; do case $1 in
 -e) enum_e=true ; shift ;;

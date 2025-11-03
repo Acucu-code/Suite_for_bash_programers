@@ -9,7 +9,7 @@
 #
 
 
-[ "$USER" = "root" ] || su - root -c "exec $0 $*"
+[ "$USER" = "root" ] || { su - root -c "exec $0 $*" ; return ;}
 
 PATH=$PATH:~/code
 [ $include_ctl ] || . include ; include varize tize # isnum - varize incluye enum y este isnum
@@ -18,7 +18,7 @@ PATH=$PATH:~/code
 fin(){
 a="" t="" g="" c="" d="" r="" o="-le"
 # a accion - t tiempo - g grados - c texto - d dirtemp - r read - o operador
-[ $# -eq 0 ] || {
+[ $# -eq 0 ] && { infsh ~/code/fin 3 8 ; return 1 ;} || {
 while [ $# -ne 0 ] ; do case $1 in
 -t) isnum $2 && { g=$2 ; shift 2 ;} || { g=40 ; shift ;} ;;
 +t) isnum $2 && { g=$2 ; o="-ge" ; shift 2 ;} || { g=70 ; shift ;} ;;
@@ -33,7 +33,7 @@ esac ; done
 [ ${#a} -ne 0 ] || a=reboot
 
 [ ${#g} -eq 0 ] && {
-	[ ${#t} -ne 0 ] || t=10
+	[ ${#t} -ne 0 ] || t=3
 	c="En $t segundos"
 } || {
 	varize d echo /sys/devices/platform/coretemp.0/hwmon/hwmon*
@@ -59,6 +59,8 @@ tize -e -c 75 $t / -c 6 $a / -c 2 [s / -c 2 ] / -c 17 $gº / -c 71 $rº / -c 9 -
 	sleep 3
 	echo 'M['$((${#a}+16))G ...'[0m'
 } || sleep $t
+
+sync
 fm false
 #umount -a 2>/dev/null
 systemctl start $a.target
