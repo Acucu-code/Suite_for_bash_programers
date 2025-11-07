@@ -14,7 +14,7 @@
 
 
 check_E(){
-local sp="¬" # separador para parp
+local sp="/-/" # separador para parp
 [ ${#2} -ne 0 ] && check_T="$check_T $sp :" || check_T="^ $check_T $sp , -"
 parp -s $sp $check_T -z -c 74 [$1] $sp +- 2
 }
