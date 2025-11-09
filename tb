@@ -18,8 +18,9 @@ local l="" a="" n=true
 [ $# -gt 0 ] || { infsh ~/code/tb 3 8 ; return ;}
 [ $1 = "-n" ] && shift || n=false
 [ $1 = "-a" ] && {
-	a="$2"
-	[ $# -gt 2 ] || set -- echo # a falta de comando
+	a="$2" ; shift 2
+	[ -e "$a" ] || { echo "No existe el archivo '$a'" ; return ;}
+	[ $# -gt 0 ] || set -- echo # a falta de comando
 	while read l ; do # lee de archivo
 		"$@" "$l"
 	done < "$a"
