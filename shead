@@ -143,7 +143,7 @@ while [ $# -ne 0 ] ; do case "$1" in # opciones generales
 			ae=$at
 		}
 		shift 2 ;;
-	 *)	[ ${#ae} -eq 0 -a -e $1 ] && {
+	 *)	[ ${#ae} -eq 0 -a -e "$1" ] && {
 			path ae "$1" ; shift
 		} || {
 			isnum $1 && {
@@ -214,7 +214,7 @@ $shead_cr && return $shead_nr || { # nº de resultados
 	[ ${#as} -eq 0 ] && { # salida a pantalla
 		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" || echo -n "$shead_rs"
 	} || { # salida a archivo
-		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" > "$as" || echo -n "$shead_rs" > "$as"
+		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" >> "$as" || echo -n "$shead_rs" >> "$as"
 	}
 }
 }

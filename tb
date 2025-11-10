@@ -1,35 +1,43 @@
 #!/bin/sh
 # oxr 2025
-# Captura la salida de una orden o lee de un archivo, y entrega cada linea a un
-# script o comando, que se ejecuta con cada linea recibida.
+# Captura la salida de una orden o lee de archivo, entregando cada linea a un
+# script u orden de darse, y/o ejecuta cada linea recibida. A falta de comando
+# muestra las lineas.
 #
-# \\b    (|) tb [-n] (-a archivo) comando [argumentos]
+# \\b    (|) tb [-n] (-a archivo) [-c | orden ]
 #
+# '-a'    archivo. De no darse se lee de la entrada standard
 # '-n'    no 'echo' tras cada ejecucion desde tuberia
-#
+# '-c'    a falta de comando ejecuta las lineas como tales, en vez de mostralas
 #
 #(1) si el archivo tiene una sola linea, sin salto de linea; read lee la linea
 # y sale del bucle sin ejecutar su contenido.
 
 
 tb(){
-local l="" a="" n=true
-# echo -- $1 -- $2 -- $3 -- $4 --
-[ $# -gt 0 ] || { infsh ~/code/tb 3 8 ; return ;}
-[ $1 = "-n" ] && shift || n=false
-[ $1 = "-a" ] && {
-	a="$2" ; shift 2
-	[ -e "$a" ] || { echo "No existe el archivo '$a'" ; return ;}
-	[ $# -gt 0 ] || set -- echo # a falta de comando
-	while read l ; do # lee de archivo
-		"$@" "$l"
-	done < "$a"
-} || {
+[ $# -gt 0 ] || { infsh ~/code/tb 3 11 ; return ;}
+local l="" a="" n=false
+
+while : ; do case "$1" in # OPCIONES
+	(-n) shift ; n=true ;;
+	(-a) a="$2" ; shift 2 ; [ ${#a} -gt 0 ] || { echo "tb: No existe el archivo '$a'" ; return ;} ;;
+	(-c) shift ; n=true ; set -- $@ eval ;;
+	("")  set -- echo ; break ;;
+	(*) break ;;
+esac ; done
+
+[ ${#a} -eq 0 ] && {
 	while read l ; do # lee de tuberia
 		"$@" "$l"
 		$n || echo
 	done
-	}
+} || {
+	while read l ; do # lee de archivo
+		"$@" "$l"
+		# $n || echo
+	done < "$a"
+}
+
 [ ! "$l" ] || "$@" "$l" #(1)
 }
 
