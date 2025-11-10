@@ -7,6 +7,7 @@
 #
 # '-e'  muestra el valor
 # '-a'  archivo del que leer, excluye 'orden' y viceversa
+# '-s'  separador de campos
 # '-n'  Reparte por cºampos hasta rº, o asigna a variables declaradas si no rº.
 # ···    Si rº=0, habra reparto hasta el final; si rº, y hay resto, a la ultima.
 # '-l'  lee de esa linea. Si no -n, se repartira entre las variables.
@@ -30,8 +31,8 @@
 
 varize(){
 [ $# -gt 1 ] || { infsh ~/code/varize 3 22 ; return ;}
-local varize_v="" varize_c="" ec=true ln="" cp=0 rt="" ae=false varize_x="" tp=/tmp/code_$USER/varize
-# V nombres_variables - c campos/comodin - ec echo - ln linea - cp campo - rt resto/comodin - ae archivo|comodin - varize_x comodin - tp tmp
+local varize_v="" varize_c="" sp=" " ec=true ln="" cp=0 rt="" ae=false varize_x="" tp=/tmp/code_$USER/varize
+# V nombres_variables - c campos/comodin - sp separador -- ec echo - ln linea - cp campo - rt resto/comodin - ae archivo|comodin - varize_x comodin - tp tmp
 
 while [ $# -ne 0 ] ; do case $1 in # opciones
 	-e) ec=false ; shift ;;
@@ -43,6 +44,7 @@ while [ $# -ne 0 ] ; do case $1 in # opciones
 			cp=$1 ; shift ; ! isnum $1 || { rt=$1 ; shift ;}
 		} || cp=1 ;;
 	-a) cp "$2" $tp ; ae=true ; shift 2 ;;
+	-s) sp="$2" ; shift 2 ;;
 	*) varize_v=$1 ; shift ; break ;;
 esac ; done
 
@@ -82,7 +84,7 @@ $ae || "$@" > $tp # ejecucion orden
 	}
 }
 
-eval read $varize_v < $tp # asignacion a variables
+IFS="$sp" eval read $varize_v < $tp # asignacion a variables
 
 $ec || { # echo
 	for varize_x in $varize_v ; do eval varize_c="\$$varize_x"
@@ -92,5 +94,5 @@ $ec || { # echo
 }
 
 
-[ ${0##*/} != varize ] || varize $@
+[ ${0##*/} != varize ] || varize "$@"
 #
