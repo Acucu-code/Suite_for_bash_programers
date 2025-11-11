@@ -36,9 +36,9 @@ trip -p a 0
 
 [ ${#a} -gt 0 ] || a=$((n+((m-n)/2)))
 
-[ $a -ge $n ] || a=$((a+n))
+while [ $a -lt $n ] ; do a=$((a+n+1)) ; done
 
-[ $a -le $m ] || a=$((a-m+n-1))
+while [ $a -gt $m ] ; do a=$((a-m+n-1)) ; done
 
 echo -n $a
 }
