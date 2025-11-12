@@ -8,7 +8,7 @@
 # '-e'  muestra el valor
 # '-a'  archivo del que leer, excluye 'orden' y viceversa
 # '-s'  separador de campos
-# '-n'  Reparte por cºampos hasta rº, o asigna a variables declaradas si no rº.
+# '-n'  Reparte desde cº campo hasta rº, o asigna a variables declaradas si no rº.
 # ···    Si rº=0, habra reparto hasta el final; si rº, y hay resto, a la ultima.
 # '-l'  lee de esa linea. Si no -n, se repartira entre las variables.
 # ···    Si lº=0 sera la ultima linea.
@@ -22,7 +22,7 @@
 #
 # \\b    varize -e -n 2 3 -m x y -- echo no si tambien tampoco
 #
-# EN PROCESO - FUNCIONA - INCLUIR
+# EN PROCESO - !!! DEFINIENDO SEPARADOR DE CAMPOS NO FUNCIONA !!!
 #
 
 
