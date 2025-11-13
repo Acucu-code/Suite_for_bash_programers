@@ -72,7 +72,7 @@ until [ $# -eq 0 ] ; do case $1 in # opciones generales
 	*) [ ${#it} -ne 0 ] || it=$@ ; break ;;
 esac ; done
 
-until [ ${#sep_C} = ${#it} ] ; do # instancias
+until [ "$sep_C" = "$it" ] ; do # instancias
 	set -- $it
 	while : ; do case $1 in # opciones en instancia
 		-s) sp=" $2 " ; shift 2 ; it=$@ ;;
