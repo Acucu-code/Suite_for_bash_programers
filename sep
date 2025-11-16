@@ -7,8 +7,8 @@
 # Opciones generales:
 # '-A' lee instancias de archivo
 # '-O' orden/es a ajecutar por cada instancia; de no darse, estas se mostraran.
-# '-R' Sin retorno de carro
 # '$sep_C' literal, es la variable que contiene cada instancia
+# '--' fin de opciones
 # 'instancias' puede ser: $insts|instSEPinst...|o nada si se lee desde archivo
 # Opciones de instancia:
 # '-E' separador espacio ' ', por defecto
@@ -17,14 +17,14 @@
 # '-s' separador, se tomara como entre espacios,' SEP '
 # '-S' separador, sin espacios 'SEP'
 # '-N' no strip, mantener espacios extra y tabuladores. '+N' no, por defecto
-# '--' fin de opciones
+# '-R' sin retorno de carro. '+R' con retorno
 #
 # \\b    sep -s $S -O '$L && I=$I$sep_C$S ; parp_fun $sep_C ; $W || R=$R$E' "$@"
 #
 # \\b    sep -S - asd-123-qwe - -E asd 123 qwe -s + asd + 123 + qwe
 #
 # Las opciones son en mayusculas porque puede haber conflicto con las opciones
-# de otros programas incluidos en la orden
+# de otros programas incluidos en la orden. Bugs con 'tize' en la orden
 #
 # Tema espacios tabuladores y comillas
 # Tenemos una linea de fstab con tabuladores
@@ -54,21 +54,22 @@
 
 
 sep(){
-local sp=" " it="" sep_C="" sep_or="" st=false rt="" tb='	' sl='
+local sp=" " it="" sep_C="" sep_or="" st=false nr="" tb='	' rt='
 '
-# sep_C comodin - sp separador - sep_or orden - it instancias - st strip  - tb tabulador - sl salto_de_linea
-[ $# -ne 0 ] || { infsh ~/code/sep 3 20 -c 2 -b sep_C ; return ;}
+# sep_C comodin - sp separador - sep_or orden - it instancias - st strip  - tb tabulador - rt salto_de_linea - nr no_return
+[ $# -ne 0 ] || { infsh ~/code/sep 3 27 -c 2 -b sep_C ; return ;}
 
 until [ $# -eq 0 ] ; do case $1 in # opciones generales
-	-A) while read sep_C ; do it="$it$sep_C$sl" ; done < "$2" ; it=${it%$sl} ; shift 2 ;;
+	-A) while read sep_C ; do it="$it$sep_C$rt" ; done < "$2" ; it=${it%$rt} ; shift 2 ;;
 	-O) sep_or="$2" ; shift 2 ;;
 	-s) sp=" $2 " ; shift 2 ;;
 	-S) sp="$2" ; shift 2 ;;
-	-L) sp="$sl" ; shift ;;
+	-L) sp="$rt" ; shift ;;
 	-T) sp="$tb" ; shift ;;
 	-E) sp=" " ; shift ;;
 	-N) st=true ; shift ;;
-	-R) rt="-n" ; shift ;;
+	-R) nr="-n" ; shift ;;
+	--) shift ; it=$@ ; break ;;
 	*) [ ${#it} -ne 0 ] || it=$@ ; break ;;
 esac ; done
 
@@ -77,18 +78,19 @@ until [ "$sep_C" = "$it" ] ; do # instancias
 	while : ; do case $1 in # opciones en instancia
 		-s) sp=" $2 " ; shift 2 ; it=$@ ;;
 		-S) sp="$2" ; shift 2 ; it=$@ ;;
-		-L) sp="$sl" ; shift ; it=$@ ;;
+		-L) sp="$rt" ; shift ; it=$@ ;;
 		-T) sp="$tb" ; shift ; it=$@ ;;
 		-E) sp=" " ; shift ; it=$@ ;;
 		-N) st=true ; shift ; it=$@ ;;
 		+N) st=false ; shift ; it=$@ ;;
-		--) shift ; it=$@ ; break ;;
+		-R) nr="-n" ; shift ; it=$@ ;;
+		+R) nr="" ; shift ; it=$@ ;;
 		*) break ;;
 	esac ; done
 
 	sep_C=${it%%$sp*} it=${it#*$sp}
 
-	[ ${#sep_or} -ne 0 ] && eval "$sep_or" || { $st && echo $rt "$sep_C" || echo $rt $sep_C ;}
+	[ ${#sep_or} -ne 0 ] && eval "$sep_or" || { $st && echo $nr "$sep_C" || echo $nr $sep_C ;}
 done
 }
 

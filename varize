@@ -22,7 +22,7 @@
 #
 # \\b    varize -e -n 2 3 -m x y -- echo no si tambien tampoco
 #
-# EN PROCESO - !!! DEFINIENDO SEPARADOR DE CAMPOS NO FUNCIONA !!!
+# EN PROCESO - DEFINIENDO SEPARADOR DE CAMPOS NO FUNCIONA
 #
 
 
@@ -30,8 +30,8 @@
 
 
 varize(){
-[ $# -gt 1 ] || { infsh ~/code/varize 3 22 ; return ;}
-local varize_v="" varize_c="" sp="$IFS" ec=true ln="" cp=0 rt="" ae=false varize_x="" tp=/tmp/code_$USER/varize
+[ $# -gt 1 ] || { infsh ~/code/varize 3 23 ; return ;}
+local varize_v="" varize_c="" sp=" " ec=true ln="" cp=0 rt="" ae=false varize_x="" tp=$tmp/varize
 # V nombres_variables - c campos/comodin - sp separador -- ec echo - ln linea - cp campo - rt resto/comodin - ae archivo|comodin - varize_x comodin - tp tmp
 
 while [ $# -ne 0 ] ; do case $1 in # opciones
@@ -63,28 +63,28 @@ $ae || "$@" > $tp # ejecucion orden
 
 [ $cp -eq 0 ] || { # campos
 	read ln < $tp
-	enum -c $ln
+	IFS=$sp enum -c "$ln"
 	[ $? -lt $cp ] && { # campo inexistente
 		eval unset $varize_v # puede dar el valor que tenia antes
 		return
 	} || { # primer campo
 		enum ae $((cp-1))
-		for varize_x in $ae ; do varize_c=$varize_c'* ' ; done
+		for varize_x in $ae ; do varize_c=$varize_c'*'$sp ; done
 		varize_c="${ln#$varize_c}"
 		[ ${#rt} -ne 0 ] || { # por variables
 				enum -c $varize_v ;
 				rt=$((($?+cp)-1)) ;
 		}  # ultimo campo
-		enum -c $ln
+		IFS=$sp enum -c "$ln"
 		enum ae $(($?-rt))
 		rt=""
-		for varize_x in $ae ; do rt=$rt' *' ; done
+		for varize_x in $ae ; do rt=$rt$sp'*' ; done
 		varize_c="${varize_c%$rt}"
 		echo "$varize_c" > $tp
 	}
 }
 
-IFS="$sp" eval read $varize_v < $tp # asignacion a variables
+[ "$sp" = " " ] && eval read $varize_v < $tp || eval IFS=$sp read $varize_v < $tp # asignacion a variables
 
 $ec || { # echo
 	for varize_x in $varize_v ; do eval varize_c="\$$varize_x"

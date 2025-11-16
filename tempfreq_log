@@ -5,13 +5,13 @@
 # incluido en control(un script del panel) al alcanzar cierta temperatura
 
 
-xterm -T 'TempFreq_Log' -fc 5 -geometry 38x3-0-0 -e sh -c '
-PATH=$PATH:~/code
+xterm -T 'TempFreq_Log' -fc 4 -geometry 38x3+0-0 -e sh -c '
+# PATH=$PATH:~/code
 . isnum
 tize -c 2 [ / -c 2 ] / "[l]log/no [i]info []refrescar [q]salir\n\
 [nº]tope [m]max [d]med [n]min [+|-]mod\n\
 [o ...]opcines de tempfreq [*]ejecutar"
-nm=/tmp/code_$USER/tempfreq tty=`/bin/tty` ; echo $tty > $nm.tty
+nm=$tmp/tempfreq tty=`/bin/tty` ; echo $tty > $nm.tty
 sleep 4
 [ -e $nm.pid ] && e=true || e=false
 case $e in

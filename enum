@@ -27,18 +27,29 @@ local enum_v="" enum_n=0 enum_c=0 enum_r="" enum_e=false
 
 while [ $# -ne 0 ] ; do case $1 in
 -e) enum_e=true ; shift ;;
--c) shift ; $enum_e && echo -n $# ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$# ; return $# ;;
- *) [ ${#enum_v} -eq 0 ] || break
-	enum_v=$1 ; shift ; isnum $1 && enum_n=$1 || continue ; shift
+
+
+-c) shift ; set -- $@ ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$# ; $enum_e && echo $# ; return $# ;;
+# -c) x="" ; sep -S . -O '[ ${#sep_C} -eq 0 ] || x=$((x+1))' $@ ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$x ; $enum_e && echo $x ; return $x ;;
+
+
+ *) isnum $1 && enum_n=$1 || { enum_v=$1 ; shift ; continue ;} ; shift
 	isnum $1 && { enum_n=$((enum_n+$1)) ; enum_c=$1 ; shift ;} ;;
+
+
 esac ; done
 
 while [ $enum_c -lt $enum_n ] ; do enum_r=$enum_r"$enum_c " enum_c=$((enum_c+1)) ; done
-echo $enum_r > /tmp/code_$USER/enum && eval read $enum_v < /tmp/code_$USER/enum || :
+
+
+# echo $enum_r > $tmp/enum && { [ ${#enum_v} -eq 0 ] && enum_e=true || eval read $enum_v < $tmp/enum ;} || :
+[ ${#enum_v} -eq 0 ] && enum_e=true || eval $enum_v="'$enum_r'"
+
+
+
 $enum_e && echo -n $enum_r
 }
 
 
-[ ${0##*/} != enum ] || { [ $# -ne 0 -a "$1" != -e ] && echo "enum solo asigna a variable si es incluido '. enum'\nSi solo quiere ver el resultado pruebe:\nenum -e $@" || enum "$@" ;}
-# echo "enum solo funciona si es incluido '. enum'"
-
+[ ${0##*/} != enum ] || enum "$@"
+#

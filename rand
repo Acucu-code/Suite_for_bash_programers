@@ -1,5 +1,5 @@
 #!/bin/sh
-#
+# oxr 2025
 # Devuelve un numero aleatorio
 #
 # \\b    rand [minº] maxº
@@ -9,22 +9,24 @@
 # PASAR A VARIABLE
 #
 
-[ $include_ctl ] || . include ; include trip trim # NO enum - 'trim' incluye 'enum'
+[ $include_ctl ] || . include ; include trip trim
 
 rand(){
 local rand=0 t=0 a=0 b=0 c=0 d=0 n=$1 m=$2 l=${#2}
+
 [ $# -gt 0 ] || { infsh ~/code/rand 3 5 ; return ;}
 
 [ $l -eq 0 ] && n=0 m=$1 l=${#m}
 
 read t < /proc/uptime
+
 a=${t##*.} b=${t% *} b=${b#*.}
 
 case $l in
 1) trim a 1 ;;
 2) ;;
 3) a=$a$b ; trim a 3 ;;
-4) a=$a$b ; ;;
+4) a=$a$b ;;
 *)	trip t '.??'
 	c=${t% *} d=${t#* } c=$((c*d)) d=${#c} rand=$c
 	trim rand $((l-4))

@@ -49,17 +49,17 @@
 tempfreq(){
 
 tty_ctl(){
-[ -e $tmp.tty ] && read tty < $tmp.tty || return 1
-[ -e "$tty" ] && return 0 || { >$tmp.tty ; return 1 ;}
+[ -e $tf_tmp.tty ] && read tty < $tf_tmp.tty || return 1
+[ -e "$tty" ] && return 0 || { >$tf_tmp.tty ; return 1 ;}
 }
 
 
 salir(){ # SALIDA
 # trap - INT TERM QUIT KILL ABRT HUP
-	! tty_ctl || [ -e $tmp""_log.pid ] || tize $prg / "Saliendo de $prg"
-	rm $tmp.pid $tmp.ops
+	! tty_ctl || [ -e $tf_tmp""_log.pid ] || tize $prg / "Saliendo de $prg"
+	rm $tf_tmp.pid $tf_tmp.ops
 	#echo $c1\\t$c2\\t$c3\\t$c4\\t$c5\\t$c6 >> tempfreq.clases # registro de uso de clases
-	[ "$1" = "r" ] && { >$tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { echo ; exit ;}
+	[ "$1" = "r" ] && { >$tf_tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { echo ; exit ;}
 } #
 # trap salir INT TERM QUIT KILL ABRT HUP
 
@@ -85,7 +85,7 @@ info(){ # INFORMACION
 	tize -e -c 4 FRECUENCIA / -c 5 TEMPERATURA / -c 3 MODULACION / -c 2 OTROS / $inf
 	inf=$l l=true
 }
-	[ -e $tmp""_log.pid ] && {
+	[ -e $tf_tmp""_log.pid ] && {
 		tize -c 2 [ / -c 2 ] / \
 "——————————————————————————————————————
 [l]log/no [i]info []refrescar [q]salir
@@ -105,21 +105,21 @@ info(){ # INFORMACION
 { # CONTROL DE EJECUCION
 	[ $1 ] || { infsh ~/code/tempfreq 3 32 ; return ;}
 	prg=${0##*/} # (VAR)
-	tmp="/tmp/code_$USER/$prg" # (VAR)
+	tf_tmp=$tmp/$prg # (VAR)
 	#donde se muestra la salida (ARCH) (VAR)
-	[ "$1" != "aqui" ] || echo > $tmp.tty
-	tty_ctl || varize -e tty /bin/tty > $tmp.tty
-	[ -e $tmp.pid ] && read x < $tmp.pid && [ -e /proc/$x ] && { # REENTRADA
-		echo $@ > $tmp.ops # (ARCH) opciones
-		read x < $tmp.slp ; [ -e "/proc/$x" ] && kill -TERM $x &>/dev/null
+	[ "$1" != "aqui" ] || echo > $tf_tmp.tty
+	tty_ctl || varize -e tty /bin/tty > $tf_tmp.tty
+	[ -e $tf_tmp.pid ] && read x < $tf_tmp.pid && [ -e /proc/$x ] && { # REENTRADA
+		echo $@ > $tf_tmp.ops # (ARCH) opciones
+		read x < $tf_tmp.slp ; [ -e "/proc/$x" ] && kill -TERM $x &>/dev/null
 		exit
 	} || { # 1ª ENTRADA
 		/bin/renice -n 19 -p $$ > /dev/null
 		# /bin/chrt -i -p 0 $$
-		echo $$ > $tmp.pid # (ARCH) pid del programa
+		echo $$ > $tf_tmp.pid # (ARCH) pid del programa
 		dt=/sys/devices/platform/coretemp.0/hwmon/hwmon1 # (VAR)
-		[ -e $tmp.tmn ] || rdiv tmn $dt/temp1_input - > $tmp.tmn # (VAR) (ARCH) temperatura minima dada
-		[ -e $tmp.rbt ] && { printf %b '\eM\eM'>$tty ; rm $tmp.rbt ;} # reboot
+		[ -e $tf_tmp.tmn ] || rdiv tmn $dt/temp1_input - > $tf_tmp.tmn # (VAR) (ARCH) temperatura minima dada
+		[ -e $tf_tmp.rbt ] && { printf %b '\eM\eM'>$tty ; rm $tf_tmp.rbt ;} # reboot
 	info -
 	}
 }
@@ -169,7 +169,7 @@ ops $@ # OPCIONES EN LINEA DE ORDENES
 	rdiv t $dt/temp1_input # temperatura actual
 	# tc temperatura de control
 	tp=$t # temperatura previa
-	read tmn < $tmp.tmn # temperatura minima
+	read tmn < $tf_tmp.tmn # temperatura minima
 	tmx=$t # temperatura maxima dada
 	ta=$((tc-tmn)) # amplitud de temperaturas
 	td=$((tc-t)) # diferencia de temperatura
@@ -227,9 +227,9 @@ max_freq $fmd
 
 while : ; do # RUTINA
 
-[ -s $tmp.ops ] && { # Opciones en $tmp.ops,tambien lo utiliza tempfreq_log.
-	read x z < $tmp.ops
-	> $tmp.ops
+[ -s $tf_tmp.ops ] && { # Opciones en $tf_tmp.ops,tambien lo utiliza tempfreq_log.
+	read x z < $tf_tmp.ops
+	> $tf_tmp.ops
 	# printf %b '\eM'>$tty
 	case $x in
 		o) ops ${z} ;;
@@ -255,7 +255,7 @@ mcr=0
 { # REVALORIZADO
 	rdiv t $dt/temp1_input
 	[ $t -ge $tnmx ] || [ $fmxa -eq $fmn -a $t -ge $tc -a $t -ge $tp ] && {
-		read x < $tmp.pid
+		read x < $tf_tmp.pid
 		[ $pmc -lt $x ] && x="Detenga procesos que usen mucha CPU." || {
 			kill -STOP $pmc
 			x="Se detuvo el programa $pmcn($pcm) que estaba sobrecalentando el sistema."
@@ -263,7 +263,7 @@ mcr=0
 		sndfile-play sonido/sonidos/trin.wav>/dev/null
 		xterm -fc 6 -T '!!!ALERTA DE TEMPERATURA!!!' -e sudo -p "$x Contraseña:" top -o %CPU -d 10
 	} || :
-	[ $t -lt $tmn ] && { tmn=$t ; echo $t > $tmp.tmn ;} || :
+	[ $t -lt $tmn ] && { tmn=$t ; echo $t > $tf_tmp.tmn ;} || :
 	rdiv f $dp''0/scaling_cur_freq
 	fm=$(((fm+f-(tp-t))/2)) ; [ $fm -lt $fnmn ] && fm=$fnmn || :
 	[ $t -gt $tmx ] && tmx=$t
@@ -402,7 +402,7 @@ mcr=0
 { # PAUSA
 /bin/sleep $ia >/dev/null &
 sl=$!
-echo $sl >$tmp.slp # (ARCH) pid del sleep
+echo $sl >$tf_tmp.slp # (ARCH) pid del sleep
 wait $sl 2>/dev/null # oculta mensaje terminated
 }
 

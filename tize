@@ -99,7 +99,7 @@ while [ $# -ne 0 ] ; do case $1 in
 esac ; done
 
 [ $# -ne 0 ] || { infsh ~/code/tize 3 31 ; return ;}
-cd /tmp/code_$USER/vacio
+cd $tmp/vacio
 cm=$@ tize_tx=${cm##* $tize_sp } # texto
 
 [ "$cm" = "$tize_tx" ] && { tize_sp="" ; tize_fun $tize_tx ;} || {  # <-texto simple
@@ -116,7 +116,7 @@ $ef || echo
 
 
 # Evitar conflictos entre corchetes/comodines y nombres de archivo: ver shead
-# mkdir -m -w -p /tmp/code_$USER/vacio
+# mkdir -m -w -p $tmp/vacio
 
 
 [ ${0##*/} != tize ] || tize "$@"

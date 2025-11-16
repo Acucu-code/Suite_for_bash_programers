@@ -18,7 +18,7 @@ tipo(){
 
 
 ##nueva version en proceso
-local tipo_e=true tipo_c=/tmp/code_$USER/tipo # tipo_t="" tipo_x=""
+local tipo_e=true tipo_c=$tmp/tipo # tipo_t="" tipo_x=""
 [ "$1" != "" ] || { infsh ~/code/tipo 3 14 ; return 5 ;}
 [ $1 != -e ] || { shift ; tipo_e=false ;}
 { [ ${#BASH} -ne 0 ] && type -t $1 || type $1 ;} >$tipo_c 2>/dev/null
@@ -35,7 +35,7 @@ case $tipo_c in
 esac
 
 
-# local tipo_c=/tmp/code_$USER/tipo tipo_t="" tipo_x=""
+# local tipo_c=$tmp/tipo tipo_t="" tipo_x=""
 # case $1 in
 # "") infsh ~/code/tipo 3 10 ;;
 # -e) shift ; [ ${#BASH} -ne 0 ] && type -t $@ || type $@ ;;

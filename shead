@@ -116,7 +116,7 @@ shead_rs="$shead_rs$ln$shead_tx$shead_sl"
 
 
 shead(){
-local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=/tmp/code_$USER/shead
+local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=$tmp/shead
 # dp directorio_previo - ae archivo - cm comodin - as archivo_salida - td todo - it instancia - sp separador - in inicial - ul ultima - at archivo_temporal
 shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0 shead_sl='\n' shead_rp=""
 shead_cr=false shead_nr=0 shead_mt=false shead_ne="" shead_mi=false shead_cl=""
@@ -152,7 +152,7 @@ while [ $# -ne 0 ] ; do case "$1" in # opciones generales
 		} ;;
 esac ; done
 
-cd /tmp/code_$USER/vacio
+cd $tmp/vacio
 
 td=$@
 
@@ -226,7 +226,7 @@ $shead_cr && return $shead_nr || { # nº de resultados
 # de los archivos que hay en el directorio desde donde se lanzo la orden.
 # SOLUCION ACTUAL
 # Directorio de trabajo vacio
-# mkdir -m -w -p /tmp/code_$USER/vacio
+# mkdir -m -w -p $tmp/vacio
 
 
 [ ${0##*/} != shead ] || shead "$@"
