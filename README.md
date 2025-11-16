@@ -30,10 +30,10 @@ CONFIGURATION:
 
 user$ echo PATH=$PATH:~/code >> ~/.bashrc
 
-2. Some tools' working files are located in /tmp/code_$USER and others use
-/tmp/code_$USER/vacio to operate with wildcards [*|?] without incident.
+2. Some tools' working files are located in /tmp/$USER and others use
+/tmp/$USER/vacio to operate with wildcards [*|?] without incident.
 
-[ -e /tmp/code_$USER/vacio ] || { mkdir /tmp/code_$USER ; mkdir -m -w /tmp/code_$USER/vacio ;} >> ~/.bashrc
+[ -e /tmp/$USER/vacio ] || { mkdir /tmp/$USER ; mkdir -m -w /tmp/$USER/vacio ;} >> ~/.bashrc
 
 3. 'tempfreq' and 'tempfreq_log' modify the CPU frequency. If not run as root,
 the user must first be granted permission:
@@ -46,11 +46,12 @@ This is a suite because most scripts depend on others. They use 'include', which
 manages inclusion. Some only work if included, either with 'include' or directly
 with '. script'.
 
-A call to '. include varize check rand infsh' will include all scripts except 'fin'
+A call to '. include varize rand infsh check' will include all scripts except 'fin'
 that is not necessary, 'tempfreq' that is not includable, and 'tempfreq_log'
 that opens a window.
 
 To obtain information about a command, it is usually enough to run it without
 any options, currently only in Spanish.
 
-For english manual view  https://acucu-code.github.io/Suite_for_bash_programers/
+For english manual view  https://acucu-code.github.io/Suite_for_bash_programers/.
+This usually not actualized. Revise the script header.
