@@ -2,7 +2,7 @@
 # oxr 2025
 # Indica si es un numero.
 #
-# \\b	isnum esto
+# \\r	isnum esto
 #
 # Admite numeros con y sin signo, enteros y, decimales con y sin parte entera o decimal
 # nº +nº -nº nº.mº +nº.mº -nº.mº .nº +.nº -.nº nº. +nº. -nº.

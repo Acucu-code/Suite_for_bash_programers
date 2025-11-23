@@ -3,7 +3,7 @@
 # Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
 # contar y definir el modo de salida.
 #
-# \\b    (|) shead (-a archivo) [-o archivo] [-t] [-l|-C] [-S SEP] [-n] ···
+# \\r    (|) shead (-a archivo) [-o archivo] [-t] [-l|-C] [-S SEP] [-n] ···
 # ···   [-f nº|inicioº [finº]] [-z] [-b] [-u] [-P] [-c colorº] [-p|-pp|-s|-ss] ···
 # ···    [-|!] [--] filtro [-r reemplazo] [SEP nueva instancia [SEP ...]]
 #
@@ -13,14 +13,14 @@
 # '-t'       devolvera todas las lineas en modo pre/sufijo
 # '-l'       mostrara el nº de linea
 # '-C'       devolvera el nº de lineas concordantes, si '!' las resultantes; por
-# \\b           pre/sufijo siempre las concordantes
+# \\r           pre/sufijo siempre las concordantes
 # '-S'       separador, por defecto es '/'
 # '-n'       sin estilo
 # '-f'       filtrara las nº ultimas lineas. Ultima opcion general
 # 'inicio fin' lineas a examinar, todas por defecto. Ultima opcion general
 # Opciones de instancia:
-# '-p|-s'    filtrara por prefijo o sufijo y actuara sobre ellos
-# '-pp|-ss'  idem pero actuara en toda la linea
+# '-p|-s'    filtrara por prefijo o sufijo y actuara sobre ellos, acepta '?'
+# '-pp|-ss'  idem pero actuara en toda la linea, acepta '?' y '* '
 # '-|-q'     no mostrara el filtro.
 # '!|-N'     no mostrara las lineas con coincidencias.
 # '-c'       da color al filtro o su reemplazo, color[0-7] color/fondo[00-77]
@@ -37,17 +37,22 @@
 # puede filtrar por contenido con '-p *filtro' o '-s filtro*' para mostrar solo
 # las lineas coincidentes; si se indica color 'filtro' no puede tener comodines.
 #
-# EN PROCESO - FUNCIONANDO - INCLUIBLE EN OTROS SCRIPTS '. shead'
 #(1) si el archivo tiene una sola linea sin salto de linea, read lee la linea
 # y sale del bucle sin ejecutar su contenido.
+#
+# INCLUIBLE EN OTROS SCRIPTS '. shead'
 
+
+# EN PROCESO
+# Rehacer bloque pre/sufijo mostrar filtro al modo aplicado al de no mostrar,
+# compartir el sistema de diferenciacion y reducir las instrucciones tize
 
 [ $include_ctl ] || . include ; include tize isnum path
 
 
 shead_fun(){
-local ln="" tr="" mt=true sp="øo"
-# ln nºlinea - tr texto_restante - mt mostrar - sp separador_para_tize
+local ln="" tr="" mt=true sp="øo" ft=""
+# ln nºlinea - tr texto_restante - mt mostrar - sp separador_para_tize - pt parte
 [ ${#shead_ft} -eq 0 ] || { # filtrar
 	[ $shead_pt = I ] && { # Contenido
 		tr=${shead_tx##*$shead_ft}
@@ -68,20 +73,18 @@ local ln="" tr="" mt=true sp="øo"
 			} || { [ ${#shead_md} -ne 0 ] || shead_nr=$((shead_nr+1)) ;}
 		}
 	} || { # Prefijo/Sufijo
-		[ $shead_pt = P -o $shead_pt = PP ] && tr=${shead_tx##$shead_ft} || tr=${shead_tx%%$shead_ft}
-		[ ${#shead_md} -ne 0 -a "$shead_tx" != "$tr" ] && { # modos mostrar y no mostrar filtro
+		case $shead_pt in
+			P)  tr=${shead_tx#$shead_ft}   pt=${shead_tx%$tr} ;;
+			PP) tr=${shead_tx##$shead_ft*} pt=${shead_tx%$tr} ;;
+			S)  tr=${shead_tx%$shead_ft}   pt=${shead_tx#$tr} ;;
+			SS) tr=${shead_tx%%*$shead_ft} pt=${shead_tx#$tr} ;;
+		esac
+		[ ${#shead_md} -ne 0 -a "$shead_tx" != "$tr" ] && { # mostrar y no mostrar filtro
 			[ ${#shead_rp} -ne 0 ] || {
 				shead_nr=$((shead_nr+1))
-				$shead_md && { # no mostrar filtro
-					[ $shead_pt = P -o $shead_pt = S ] && shead_tx=$tr || tize -v shead_tx -s $sp $shead_ne -q $shead_ft $sp "$shead_tx"
-				} || { # colorea filtro si se indica color - NO admite comodines
-					[ ${#shead_cl} -eq 0 -o ${#shead_ne} -gt 0 ] || {
-						[ $shead_pt = P -o $shead_pt = S ] && {
-							tize -v shead_ft $shead_ne $shead_cl "$shead_ft"
-							[ $shead_pt = P ] && shead_tx=$shead_ft$tr || shead_tx=$tr$shead_ft
-						} || tize -v shead_tx -s $sp $shead_ne $shead_cl $shead_ft $sp "$shead_tx"
-					}
-				}
+				$shead_md && shead_cl="-q" || [ ${#shead_cl} -eq 0 -o ${#shead_ne} -gt 0 ] && shead_ne="-n"
+				tize -v pt -s $sp $shead_ne $shead_cl $shead_ft $sp "$pt"
+				[ $shead_pt = P -o $shead_pt = PP ] && shead_tx=$pt$tr || shead_tx=$tr$pt
 			}
 		} || { # no mostrar lineas coincidentes - se mostraran lineas no coincidentes
 			[ ${#shead_md} -eq 0 -a "$shead_tx" = "$tr" ] || { # siempre que no sean true

@@ -2,9 +2,9 @@
 # oxr 2025
 # Da estilo, elimina ,reemplaza o cuenta ocurrencias en un texto
 #
-# \\b    tize [-e] [-s SEP] [-C] [-v var] [-a archivo] ···
-# ···   [-n]|[[-c nº -f nº] [-b] [-p] [-u]] ···
-# ···    [-q] objetivo [-r reemplazo] [SEP nueva instancia...] [--] SEP texto
+# \\r    tize [-e] [-s SEP] [-C] [-v var] (-a archivo) ···
+# ···    [-n] | [[-c nº|-f nº] [-b] [-p] [-u] ]] ···
+# ···    [-q] objetivo [-r reemplazo] [SEP nueva instancia...] [--] (SEP texto)
 #
 # Opciones generales:
 # '-s'    SEParador de instancias, '/' por defecto. Antes que '-a'.
@@ -98,7 +98,7 @@ while [ $# -ne 0 ] ; do case $1 in
 	*) break ;;
 esac ; done
 
-[ $# -ne 0 ] || { infsh ~/code/tize 3 31 ; return ;}
+[ $# -ne 0 ] || { infsh ~/code/tize 3 31 -u objetivo ; return ;}
 cd $tmp/vacio
 cm=$@ tize_tx=${cm##* $tize_sp } # texto
 
@@ -108,7 +108,7 @@ cm=$@ tize_tx=${cm##* $tize_sp } # texto
 }
 
 cd "$dr"
-[ ${#tize_v} -ne 0 ] && eval $tize_v="'$tize_tx'" || {
+[ ${#tize_v} -ne 0 ] && eval $tize_v='$tize_tx' || {
 	[ ${#BASH} -ne 0 ] && echo -e -n "$tize_tx" || echo -n "$tize_tx"
 }
 $ef || echo

@@ -2,7 +2,7 @@
 # oxr 2025
 # Controla la temperatura con cpufreq schedutil a traves de scaling_max_freq.
 #
-# \\b    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ] &
+# \\r    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ] &
 #
 # Al menos se debe dar una opcion:
 # 'intervalo' de refresco en segundos
@@ -13,7 +13,7 @@
 #
 # Esta pensado para ir en background, funcionando de manera automatica.
 #
-# \\b    tempfreq 10 0 2 0 true &    # '0' no modifica
+# \\r    tempfreq 10 0 2 0 true &    # '0' no modifica
 #
 # pone intervalo a 10”, amplitud de modulacion a ⇐200 Mz y activa el log.
 #
@@ -23,7 +23,7 @@
 # 'i' muestra informacion
 # 'h' la ayuda
 #
-# \\b    tempfreq i    # muestra informacion sobre el programa, variables y log.
+# \\r    tempfreq i    # muestra informacion sobre el programa, variables y log.
 #
 # Cuando es gestionado por 'tempfreq_log', 'aqui' traera su salida al tty.
 #
@@ -73,13 +73,13 @@ rdiv(){ # ASIGNA O MUESTRA EL VALOR DE UNA VARIABLE LEIDA DE UN ARCHIVO DIVIDIDA
 
 
 info(){ # INFORMACION
-[ $# -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x="$"$i ; echo $i=$x ; done ; return ;}
+[ $# -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x=\$$i ; echo $i=$x ; done ; return ;}
 [ $# -ne 0 ] || {
 	for i in "OTROS_____" ib ia sl dt tty cpu pmc pmcn prg\
 			TEMPERATURA tmn tp t tmx tc tnmx ta td tf tfc \
 			FRECUENCIA fnmn fmn fmna fmd fp f fm fmx fmxa fmxf fnmx ff \
 			MODULACION mc mp mt mv ma mcr mfr mfa mf ; do
-		eval x="$"$i
+		eval x=\$$i
 		[ ${#x} -ne 0 ] && inf="$inf\n$i=$x" || inf="$inf\n$i" # (VAR) variables y sus valores
 	done
 	tize -e -c 4 FRECUENCIA / -c 5 TEMPERATURA / -c 3 MODULACION / -c 2 OTROS / $inf

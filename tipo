@@ -5,9 +5,9 @@
 #
 # funcion(0),alias(1),palabra_clave(2),orden_interna(3),archivo(4),no existe(5).
 #
-# \\b    tipo [-e] comando && es_funcion... || otros...
+# \\r    tipo [-e] comando && es_funcion... || otros...
 #
-# \\b    tipo comando ; [ $? -lt 5 ] || echo "$1 no es un comando reconocido"
+# \\r    tipo comando ; [ $? -lt 5 ] || echo "$1 no es un comando reconocido"
 #
 # '-e'    muestra el tipo
 #

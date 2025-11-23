@@ -2,17 +2,17 @@
 # oxr 2025
 # Enumera una cantidad en sus integrantes o cuenta las palabras de una frase
 #
-# \\b    enum [-e] [var] -c frase | var nº [cº]
+# \\r    enum [-e] [var] -c frase | nº [cº]
 #
-# '-c'  devuelve el numero de palabras de la frase, 'var' es opcional
 # 'var' nombre de la variable a la que asignar el resultado
+# '-c'  devuelve el numero de palabras de la frase
 # 'nº'  cantidad a enumerar
 # 'cº'  comienzo de la enumeracion, 0 por defecto
-# '-e'  tambien muestra el resultado
+# '-e'  muestra el resultado, si no 'var' ni '-c' tambien
 #
-# \\b    enum x 3 ; for i in $x ; do ... ; done
+# \\r    enum x 3 ; for i in $x ; do ... ; done
 #
-# \\b    enum -c $frase ; shift $?
+# \\r    enum -c $frase ; shift $?
 #
 # Debe incluirse '. enum' para que la asignacion a variable surta efecto
 # EN PROCESO - FUNCIONA - INCLUIR
@@ -27,25 +27,15 @@ local enum_v="" enum_n=0 enum_c=0 enum_r="" enum_e=false
 
 while [ $# -ne 0 ] ; do case $1 in
 -e) enum_e=true ; shift ;;
-
-
--c) shift ; set -- $@ ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$# ; $enum_e && echo $# ; return $# ;;
-# -c) x="" ; sep -S . -O '[ ${#sep_C} -eq 0 ] || x=$((x+1))' $@ ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$x ; $enum_e && echo $x ; return $x ;;
-
-
+-c) shift ; set -- $@ ; [ ${#enum_v} -eq 0 ] || eval $enum_v=$#
+	$enum_e && echo $# ; return $# ;;
  *) isnum $1 && enum_n=$1 || { enum_v=$1 ; shift ; continue ;} ; shift
 	isnum $1 && { enum_n=$((enum_n+$1)) ; enum_c=$1 ; shift ;} ;;
-
-
 esac ; done
 
 while [ $enum_c -lt $enum_n ] ; do enum_r=$enum_r"$enum_c " enum_c=$((enum_c+1)) ; done
 
-
-# echo $enum_r > $tmp/enum && { [ ${#enum_v} -eq 0 ] && enum_e=true || eval read $enum_v < $tmp/enum ;} || :
-[ ${#enum_v} -eq 0 ] && enum_e=true || eval $enum_v="'$enum_r'"
-
-
+[ ${#enum_v} -eq 0 ] && enum_e=true || eval $enum_v='$enum_r'
 
 $enum_e && echo -n $enum_r
 }

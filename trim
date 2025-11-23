@@ -2,9 +2,9 @@
 #oxr 2025
 # Devuelve una porcion de una cadena
 #
-# \\b    trim varname [-p|-s|posº] countº    (solo si se incluyo '. trim')
+# \\r    trim varname [-p|-s|posº] countº    (solo si se incluyo '. trim')
 #
-# \\b    trim [-n] [-p|-s|posº] countº string
+# \\r    trim [-n] [-p|-s|posº] countº string
 #
 # 'varname'    Modificara dicha variable
 # '-n'         Usar este modo a pesar de haber incluido el script
@@ -29,7 +29,7 @@ case $# in
 *) o="$1 $2" n=$3 c=$4 ; shift 4 ;;
 esac
 o=${o#* }
-[ $# -eq 0 ] && eval trim_s="\$$trim_v" || trim_s="$@"
+[ $# -eq 0 ] && eval trim_s=\$$trim_v || trim_s="$@"
 # echo ..TRIM=$trim_v..O=$o..N=$n..C=$c..S=$trim_s..
 # return
 [ ${#n} -gt 0 ] && {
@@ -40,7 +40,7 @@ o=${o#* }
 	enum c $c ; for c in $c ; do trim_x=$trim_x"?" ; done
 }
 [ "$o" = "-p" ] && trim_s=${trim_s%$trim_x} || trim_s=${trim_s#$trim_x}
-[ ${#trim_v} -eq 0 ] && echo "$trim_s" || eval "$trim_v"="'$trim_s'"
+[ ${#trim_v} -eq 0 ] && echo "$trim_s" || eval $trim_v='$trim_s'
 }
 
 

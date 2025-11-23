@@ -2,7 +2,7 @@
 #oxr 2025
 # convierte una ruta parcial en absoluta y se la asigna a una variable
 #
-# \\b    path [-e] var ruta
+# \\r    path [-e] var ruta
 #
 # '-e'    tambien muestra el resultado
 # 'var'   variable que contendra la ruta absoluta
@@ -16,7 +16,7 @@ local e=true
 [ $1 ] || { infsh ~/code/path 3 11 ; return 1 ;}
 [ $1 != "-e" ] || { e=false ; shift ;}
 [ -e "$2" ] && {
-			[ "${2#/}" != "$2" ] && eval $1="'$2'" || eval $1="'$PWD/$2'"
+			[ "${2#/}" != "$2" ] && eval $1='$2' || eval $1='$PWD/$2'
 			$e || eval echo \$$1
 			return 0
 		} || return 1

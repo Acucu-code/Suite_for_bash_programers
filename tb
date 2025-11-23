@@ -4,7 +4,7 @@
 # script u orden de darse, y/o ejecuta cada linea recibida. A falta de comando
 # muestra las lineas.
 #
-# \\b    (|) tb [-n] (-a archivo) [-c | orden ]
+# \\r    (|) tb [-n] (-a archivo) [-c | orden ]
 #
 # '-a'    archivo. De no darse se lee de la entrada standard
 # '-n'    no 'echo' tras cada ejecucion desde tuberia
@@ -16,6 +16,7 @@
 
 tb(){
 [ $# -gt 0 ] || { infsh ~/code/tb 3 11 ; return ;}
+
 local l="" a="" n=false
 
 while : ; do case "$1" in # OPCIONES
@@ -37,7 +38,6 @@ esac ; done
 		# $n || echo
 	done < "$a"
 }
-
 [ ! "$l" ] || "$@" "$l" #(1)
 }
 

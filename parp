@@ -3,7 +3,7 @@
 # Generador de texto posicionable, con estilos y repeticiones. Admite multiples
 # instancias e inclusion de archivos de instancias y de secuencias de escape.
 #
-# \\b	parp [-l] [-s SEP] [opciones] [--] Texto [SEP nueva instancia [SEP ...]]
+# \\r	parp [-l] [-s SEP] [opciones] [--] Texto [SEP nueva instancia [SEP ...]]
 #
 # Parp acepta multiples opciones, con las formas:
 # (S)imbolo: S S+ S- S= SS

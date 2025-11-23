@@ -2,7 +2,7 @@
 # oxr 2025
 # Devuelve un numero aleatorio
 #
-# \\b    rand [minº] maxº
+# \\r    rand [minº] maxº
 #
 #
 #

@@ -2,9 +2,9 @@
 #oxr 2025
 # Elimina caracteres o unifica repeticiones en una cadena
 #
-# \\b    trip [-u] [-p|-s|-m] varname chars    (solo si se incluyo '. trip')
+# \\r    trip [-u] [-p|-s|-m] varname chars    (solo si se incluyo '. trip')
 #
-# \\b    trip [-n] [-u] [-p|-s|-m] chars string
+# \\r    trip [-n] [-u] [-p|-s|-m] chars string
 #
 # '-u'         Unifica en vez de eliminar
 # '-n'         Usar este modo a pesar de haber incluido el script
@@ -13,8 +13,8 @@
 # 'chars'      Caracteres a retirar
 # 'string'     Cadena a modificar y mostrar
 #
-# \\b    user$ trip -u "⧵t" "/dev/sda1				ext3 ..."
-# \\b    /dev/sda1	ext3 ...
+# \\r    user$ trip -u "⧵t" "/dev/sda1				ext3 ..."
+# \\r    /dev/sda1	ext3 ...
 #
 
 
@@ -25,7 +25,7 @@ local trip_v="" trip_s="" u=false o="" c="" w="" y="" z=""
 [ "$1" != "-u" ] || { shift ; u=true ;}
 case "$1" in -p|-s|-m) o=$1 ; shift ;; esac
 [ $# -gt 1 ] || { infsh ~/code/trip 3 17 ; return ;}
-[ ${0##*/} = trip -o "$trip_s" = "-n" ] && trip_v="" c="$1" trip_s="$2" || { trip_v=$1 c=$2 ; eval trip_s="\$$trip_v" ;}
+[ ${0##*/} = trip -o "$trip_s" = "-n" ] && trip_v="" c="$1" trip_s="$2" || { trip_v=$1 c=$2 ; eval trip_s=\$$trip_v ;}
 [ "$c" != "\t" ] ||  c="	" # convierte a tab real
 $u && y="$c$c" || y="$c"
 case $o in
@@ -36,7 +36,7 @@ case $o in
 		o="$trip_s" ; until [ "$o" = "${o%$c}" ] ; do o=${o%$c} ; done ; o=${trip_s#*$o} trip_s=${trip_s#$w} trip_s=${trip_s%$o}
 		until [ "$trip_s" = "${trip_s#*$y}" ] ; do z=${trip_s%%$y*} trip_s=${trip_s#*$y} ; $u && trip_s="$z$c$trip_s" || trip_s="$z$trip_s" ; done ; trip_s="$w$trip_s$o" ;;
 esac
-[ ${#trip_v} -eq 0 ] && echo "$trip_s" || eval "$trip_v"="'$trip_s'"
+[ ${#trip_v} -eq 0 ] && echo "$trip_s" || eval $trip_v='$trip_s'
 }
 
 

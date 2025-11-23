@@ -9,13 +9,13 @@
 #
 # Desde linea de comandos de 'bash':
 #
-# \\b    . include [-l] script_1 [script_2 ...] # la prinera vez, luego sin '. '
+# \\r    . include [-l] script_1 [script_2 ...] # la prinera vez, luego sin '. '
 #
 # '-l' Para ver informacion del proceso de inclusion
 #
 # En script 'sh':
 #
-# \\b    [ $include_ctl || ] . include ; include script_1 [script_2 ...]
+# \\r    [ $include_ctl || ] . include ; include script_1 [script_2 ...]
 #
 # Lo de '$include_ctl' es para ahorrar procesamiento,
 #
@@ -46,7 +46,7 @@ include(){
 local include_v="" include_p="" include_o=${0##*/} include_i="$@" include_t=""
 [ $# -ne 0 ] || {
 	# [ "$include_o" = "include" ] || [ "$include_o" = "sh" ] &&
-{ infsh ~/code/include 3 20 ; return ;}
+	{ infsh ~/code/include 3 20 ; return ;}
 }
 [ $1 != "-l" ] || { include_l=false ; shift ;}
 read include_p < /proc/$$/comm
@@ -57,7 +57,7 @@ for include_v in $@ ; do
 	[ $include_t -eq 0 ] && { # Incluido
 		$include_l || include_log 93 FUN
 	} || { # No incluido
-		[ $include_o = $include_v -o $include_t = 5 ] && { # no existe
+		[ $include_o = $include_v -o $include_t = 5 ] && { # a si mismo|no existe
 			$include_l || include_log "47;91" NOT
 		} || { # incluir
 			. ~/code/$include_v ;

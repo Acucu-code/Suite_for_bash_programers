@@ -4,10 +4,10 @@
 # Las acciones son [s]si [enter|n]no [q]quitar/cancelar
 # La salida, se recoge con '$?' ,si>0 no>1 cancelar>2 quitar>3
 #
-# \\b    check [-] texto && ... || ...
+# \\r    check [-] texto && ... || ...
 #
 # '-'    No termina al pulsar [q] cuando fue incluido en un script o bash con
-# \\b       '. check', en bash se cerraria el terminal !!
+# \\r       '. check', en bash se cerraria el terminal !!
 
 
 [ $include_ctl ] || . include ; include parp
