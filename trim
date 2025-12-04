@@ -2,15 +2,14 @@
 #oxr 2025
 # Devuelve una porcion de una cadena
 #
-# \\r    trim varname [-p|-s|posº] countº    (solo si se incluyo '. trim')
+# \\r    trim <varname> [-p|-s|posº] countº [--] <string>
 #
-# \\r    trim [-n] [-p|-s|posº] countº string
-#
-# 'varname'    Modificara dicha variable
+# 'varname'    Modificara su valor o se le asignara la modificacion de 'string'
 # '-n'         Usar este modo a pesar de haber incluido el script
 # '-p|-s|posº' Extrae del prefijo, sufijo(por defecto) o desde posº
 # 'countº'     nº de caracteres a extraer
-# 'string'     Cadena a recortar y mostrar
+# '--'         Si 'string' es un numero
+# 'string'     Cadena a utilizar. Se mostrara si no 'varname'
 #
 
 
@@ -19,19 +18,19 @@
 
 trim(){
 local trim_v="" trim_s="" o="-s" c="" n="" trim_x="" w=""
-case $# in
-0|1) infsh ~/code/trim 3 13 ; return ;;
-2) isnum $1 && c=$1 o="-s" || { trim_v=$1 c=$2 ; shift ;} ; shift ;;
-3) isnum $1 && n=$1 c=$2 || { [ ${1#-} = $1 ] && {
-			[ ${2#-} = $2 ] && trim_v=$1 n=$2 c=$3 || trim_v=$1 o=$2 c=$3 ; shift
-		} || o=$1 c=$2 ;} ; shift 2 ;;
-4) [ ${1#-} = $1 ] || {	[ ${2#-} = $2 ] && o=$1 n=$2 c=$3 || o="$1 $2" c=$3	;} ; shift 3 ;;
-*) o="$1 $2" n=$3 c=$4 ; shift 4 ;;
-esac
-o=${o#* }
+[ $# -gt 1 ] || { infsh ~/code/trim 3 12 ; return ;}
+
+isnum $1 || [ ${1#-} != $1 ] || { trim_v=$1 ; shift ;}
+
+isnum $1 && {
+	isnum $2 && { n=$1 c=$2 ; shift 2 ;} || { c=$1 ; shift ;}
+} || {
+	o=$1 c=$2 ; shift 2
+}
+[ "$1" = -- ] && shift
+
 [ $# -eq 0 ] && eval trim_s=\$$trim_v || trim_s="$@"
-# echo ..TRIM=$trim_v..O=$o..N=$n..C=$c..S=$trim_s..
-# return
+
 [ ${#n} -gt 0 ] && {
 	enum n $((n-1)) ; for n in $n ; do trim_s=${trim_s#?} ; done
 	n=${#trim_s} ; enum n $((n-c)) ; for n in $n ; do trim_s=${trim_s%?} ; done
@@ -39,6 +38,7 @@ o=${o#* }
 	n=${#trim_s} ; [ $c -le $n ] && c=$((n-c)) || c=0
 	enum c $c ; for c in $c ; do trim_x=$trim_x"?" ; done
 }
+
 [ "$o" = "-p" ] && trim_s=${trim_s%$trim_x} || trim_s=${trim_s#$trim_x}
 [ ${#trim_v} -eq 0 ] && echo "$trim_s" || eval $trim_v='$trim_s'
 }
