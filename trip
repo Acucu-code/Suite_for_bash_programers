@@ -19,22 +19,42 @@
 
 
 trip(){
-#trip_v variable - trip_s comodin/resultado - u unificar - o opcion/comodin - c chars - w y z comodines
-local trip_v="" trip_s="" u=false o="" c="" w="" y="" z=""
+#v variable - s comodin/resultado - u unificar - o opcion/comodin - c chars - w y z comodines
+local trip_v="" trip_s="" trip_u=false trip_o="" trip_c="" trip_w="" trip_y="" trip_z=""
 [ "$1" != "-n" ] || { shift ; trip_s="-n" ;}
-[ "$1" != "-u" ] || { shift ; u=true ;}
-case "$1" in -p|-s|-m) o=$1 ; shift ;; esac
+[ "$1" != "-u" ] || { shift ; trip_u=true ;}
+case "$1" in -p|-s|-m) trip_o=$1 ; shift ;; esac
 [ $# -gt 1 ] || { infsh ~/code/trip 3 17 ; return ;}
-[ ${0##*/} = trip -o "$trip_s" = "-n" ] && trip_v="" c="$1" trip_s="$2" || { trip_v=$1 c=$2 ; eval trip_s=\$$trip_v ;}
-[ "$c" != "\t" ] ||  c="	" # convierte a tab real
-$u && y="$c$c" || y="$c"
-case $o in
-	-p) until [ "$trip_s" = "${trip_s#$y}" ] ; do $u && trip_s="$c${trip_s#$y}" || trip_s=${trip_s#$y} ; done ;;
-	-s) until [ "$trip_s" = "${trip_s%$y}" ] ; do $u && trip_s="${trip_s%$y}$c" || trip_s=${trip_s%$y} ; done ;;
-	"") until [ "$trip_s" = "${trip_s#*$y}" ] ; do o=${trip_s%%$y*} trip_s=${trip_s#*$y} ; $u && trip_s="$o$c$trip_s" || trip_s="$o$trip_s" ; done ;;
-	-m)	w="$trip_s" ; until [ "$w" = "${w#$c}" ] ; do w=${w#$c} ; done ; w=${trip_s%$w}
-		o="$trip_s" ; until [ "$o" = "${o%$c}" ] ; do o=${o%$c} ; done ; o=${trip_s#*$o} trip_s=${trip_s#$w} trip_s=${trip_s%$o}
-		until [ "$trip_s" = "${trip_s#*$y}" ] ; do z=${trip_s%%$y*} trip_s=${trip_s#*$y} ; $u && trip_s="$z$c$trip_s" || trip_s="$z$trip_s" ; done ; trip_s="$w$trip_s$o" ;;
+[ ${0##*/} = trip -o "$trip_s" = "-n" ] && trip_c="$1" trip_s="$2" || {
+	trip_v=$1 trip_c=$2 ; eval trip_s=\$$trip_v ;
+}
+[ "$trip_c" != "\t" ] ||  trip_c="	" # convierte a tab real
+$trip_u && trip_y="$trip_c$trip_c" || trip_y="$trip_c"
+case $trip_o in
+	-p) until [ "$trip_s" = "${trip_s#$trip_y}" ] ; do
+			$trip_u && trip_s="$trip_c${trip_s#$trip_y}" || trip_s=${trip_s#$trip_y} ;
+		done ;;
+	-s) until [ "$trip_s" = "${trip_s%$trip_y}" ] ; do
+			$trip_u && trip_s="${trip_s%$trip_y}$trip_c" || trip_s=${trip_s%$trip_y} ;
+		done ;;
+	"") until [ "$trip_s" = "${trip_s#*$trip_y}" ] ; do
+			trip_o=${trip_s%%$trip_y*} trip_s=${trip_s#*$trip_y} ;
+			$trip_u && trip_s="$trip_o$trip_c$trip_s" || trip_s="$trip_o$trip_s" ;
+		done ;;
+	-m)	trip_w="$trip_s" ;
+		until [ "$trip_w" = "${trip_w#$trip_c}" ] ; do
+			trip_w=${trip_w#$trip_c} ;
+		done ;
+		trip_w=${trip_s%$trip_w} trip_o="$trip_s" ;
+		until [ "$trip_o" = "${trip_o%$trip_c}" ] ; do
+			trip_o=${trip_o%$trip_c} ;
+		done ;
+		trip_o=${trip_s#*$trip_o} trip_s=${trip_s#$trip_w} trip_s=${trip_s%$trip_o}
+		until [ "$trip_s" = "${trip_s#*$trip_y}" ] ; do
+			trip_z=${trip_s%%$trip_y*} trip_s=${trip_s#*$trip_y} ;
+			$trip_u && trip_s="$trip_z$trip_c$trip_s" || trip_s="$trip_z$trip_s" ;
+		done ;
+		trip_s="$trip_w$trip_s$trip_o" ;;
 esac
 [ ${#trip_v} -eq 0 ] && echo "$trip_s" || eval $trip_v='$trip_s'
 }

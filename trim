@@ -4,10 +4,9 @@
 #
 # \\r    trim <varname> [-p|-s|posº] countº [--] <string>
 #
-# 'varname'    Modificara su valor o se le asignara la modificacion de 'string'
-# '-n'         Usar este modo a pesar de haber incluido el script
-# '-p|-s|posº' Extrae del prefijo, sufijo(por defecto) o desde posº
-# 'countº'     nº de caracteres a extraer
+# 'varname'    Modificara su valor o la modificacion de 'string' de darse
+# '-p|-s|posº' Extrae del prefijo, sufijo o desde posº
+# 'countº'     Si '-p,-s o posº' caracteres a extraer, sino pasa a ser posº
 # '--'         Si 'string' es un numero
 # 'string'     Cadena a utilizar. Se mostrara si no 'varname'
 #
@@ -17,29 +16,29 @@
 
 
 trim(){
-local trim_v="" trim_s="" o="-s" c="" n="" trim_x="" w=""
-[ $# -gt 1 ] || { infsh ~/code/trim 3 12 ; return ;}
-
+local trim_v="" trim_s="" trim_o="" trim_c="" trim_n="" trim_x=""
+[ $# -gt 1 ] || { infsh ~/code/trim 3 11 ; return ;}
 isnum $1 || [ ${1#-} != $1 ] || { trim_v=$1 ; shift ;}
-
 isnum $1 && {
-	isnum $2 && { n=$1 c=$2 ; shift 2 ;} || { c=$1 ; shift ;}
+	isnum $2 && { trim_n=$1 trim_c=$2 ; shift 2 ;} || { trim_c=$1 ; shift ;}
 } || {
-	o=$1 c=$2 ; shift 2
+	trim_o=$1 trim_c=$2 ; shift 2
 }
 [ "$1" = -- ] && shift
-
 [ $# -eq 0 ] && eval trim_s=\$$trim_v || trim_s="$@"
-
-[ ${#n} -gt 0 ] && {
-	enum n $((n-1)) ; for n in $n ; do trim_s=${trim_s#?} ; done
-	n=${#trim_s} ; enum n $((n-c)) ; for n in $n ; do trim_s=${trim_s%?} ; done
+[ ${#trim_n} -eq 0 ] && {
+	[ ${#trim_o} -eq 0 ] && trim_c=$((trim_c-1)) || {
+		trim_n=${#trim_s} ; [ $trim_c -le $trim_n ] && trim_c=$((trim_n-trim_c)) || trim_c=0 ;
+	}
+	enum trim_c $trim_c ; for trim_c in $trim_c ; do trim_x=$trim_x"?" ; done
+	case $trim_o in
+		-p) trim_s=${trim_s%$trim_x} ;;
+		-s|"") trim_s=${trim_s#$trim_x} ;;
+	esac
 } || {
-	n=${#trim_s} ; [ $c -le $n ] && c=$((n-c)) || c=0
-	enum c $c ; for c in $c ; do trim_x=$trim_x"?" ; done
+	enum trim_n $((trim_n-1)) ; for trim_n in $trim_n ; do trim_s=${trim_s#?} ; done
+	trim_n=${#trim_s} ; enum trim_n $((trim_n-trim_c)) ; for trim_n in $trim_n ; do trim_s=${trim_s%?} ; done
 }
-
-[ "$o" = "-p" ] && trim_s=${trim_s%$trim_x} || trim_s=${trim_s#$trim_x}
 [ ${#trim_v} -eq 0 ] && echo "$trim_s" || eval $trim_v='$trim_s'
 }
 

@@ -31,64 +31,64 @@
 
 varize(){
 [ $# -gt 1 ] || { infsh ~/code/varize 3 23 ; return ;}
-local varize_v="" varize_c="" sp=" " ec=true ln="" cp=0 rt="" ae=false varize_x="" tp=$tmp/varize
-# V nombres_variables - c campos/comodin - sp separador -- ec echo - ln linea - cp campo - rt resto/comodin - ae archivo|comodin - varize_x comodin - tp tmp
+local varize_v="" varize_n="" varize_s=" " varize_e=true varize_l="" varize_c=0 varize_r="" varize_a=false varize_x="" varize_t=$tmp/varize
+# v nombres-variables - n campos/comodin - s separador -- e echo - l linea - c campo - r resto/comodin - a archivo|comodin - x comodin - t tmp
 
 while [ $# -ne 0 ] ; do case $1 in # opciones
-	-e) ec=false ; shift ;;
+	-e) varize_e=false ; shift ;;
 	-m)	shift ; varize_v=$@ ; varize_v=${varize_v%% --*}
 		enum -c $varize_v ; shift $(($?+1))
 		set -- $@ ;	break ;;
-    -l) ln=$2 ; shift 2 ;;
+    -l) varize_l=$2 ; shift 2 ;;
 	-n) shift ; isnum $1 && {
-			cp=$1 ; shift ; ! isnum $1 || { rt=$1 ; shift ;}
-		} || cp=1 ;;
-	-a) cp "$2" $tp ; ae=true ; shift 2 ;;
-	-s) sp="$2" ; shift 2 ;;
+			varize_c=$1 ; shift ; ! isnum $1 || { varize_r=$1 ; shift ;}
+		} || varize_c=1 ;;
+	-a) cp "$2" $varize_t ; varize_a=true ; shift 2 ;;
+	-s) varize_s="$2" ; shift 2 ;;
 	*) varize_v=$1 ; shift ; break ;;
 esac ; done
 
-$ae || "$@" > $tp # ejecucion orden
+$varize_a || "$@" > $varize_t # ejecucion orden
 
-[ ${#ln} -eq 0 ] || { # linea
-	[ $ln -eq 0 ] && { # ultima linea
-		while read ae ; do ln=$varize_x varize_x=$ae ; done < $tp # por ultimo salto de linea
-		[ ${#varize_x} -eq 0 ] || ln=$varize_x
+[ ${#varize_l} -eq 0 ] || { # linea
+	[ $varize_l -eq 0 ] && { # ultima linea
+		while read varize_a ; do varize_l=$varize_x varize_x=$varize_a ; done < $varize_t # por ultimo salto de linea
+		[ ${#varize_x} -eq 0 ] || varize_l=$varize_x
 	} || { # tal linea
-		enum ae $ln
-		for varize_x in $ae ; do read ln ; done < $tp
+		enum varize_a $varize_l
+		for varize_x in $varize_a ; do read varize_l ; done < $varize_t
 	}
-	echo "$ln" > $tp
+	echo "$varize_l" > $varize_t
 }
 
-[ $cp -eq 0 ] || { # campos
-	read ln < $tp
-	IFS=$sp enum -c "$ln"
-	[ $? -lt $cp ] && { # campo inexistente
+[ $varize_c -eq 0 ] || { # campos
+	read varize_l < $varize_t
+	IFS=$varize_s enum -c "$varize_l"
+	[ $? -lt $varize_c ] && { # campo inexistente
 		eval unset $varize_v # puede dar el valor que tenia antes
 		return
 	} || { # primer campo
-		enum ae $((cp-1))
-		for varize_x in $ae ; do varize_c=$varize_c'*'$sp ; done
-		varize_c="${ln#$varize_c}"
-		[ ${#rt} -ne 0 ] || { # por variables
+		enum varize_a $((varize_c-1))
+		for varize_x in $varize_a ; do varize_n=$varize_n'*'$varize_s ; done
+		varize_n="${varize_l#$varize_n}"
+		[ ${#varize_r} -ne 0 ] || { # por variables
 				enum -c $varize_v ;
-				rt=$((($?+cp)-1)) ;
+				varize_r=$((($?+varize_c)-1)) ;
 		}  # ultimo campo
-		IFS=$sp enum -c "$ln"
-		enum ae $(($?-rt))
-		rt=""
-		for varize_x in $ae ; do rt=$rt$sp'*' ; done
-		varize_c="${varize_c%$rt}"
-		echo "$varize_c" > $tp
+		IFS=$varize_s enum -c "$varize_l"
+		enum varize_a $(($?-varize_r))
+		varize_r=""
+		for varize_x in $varize_a ; do varize_r=$varize_r$varize_s'*' ; done
+		varize_n="${varize_n%$varize_r}"
+		echo "$varize_n" > $varize_t
 	}
 }
 
-[ "$sp" = " " ] && eval read $varize_v < $tp || eval IFS=$sp read $varize_v < $tp # asignacion a variables
+[ "$varize_s" = " " ] && eval read $varize_v < $varize_t || eval IFS=$varize_s read $varize_v < $varize_t # asignacion a variables
 
-$ec || { # echo
-	for varize_x in $varize_v ; do eval varize_c=\$$varize_x
-		echo "$varize_c" ;
+$varize_e || { # echo
+	for varize_x in $varize_v ; do eval varize_n=\$$varize_x
+		echo "$varize_n" ;
 	done
 }
 }

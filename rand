@@ -23,13 +23,13 @@ read t < /proc/uptime
 a=${t##*.} b=${t% *} b=${b#*.}
 
 case $l in
-1) trim a 1 ;;
+1) trim a -s 1 ;;
 2) ;;
-3) a=$a$b ; trim a 3 ;;
+3) a=$a$b ; trim a -s 3 ;;
 4) a=$a$b ;;
 *)	trip t '.??'
 	c=${t% *} d=${t#* } c=$((c*d)) d=${#c} rand=$c
-	trim rand $((l-4))
+	trim rand -s $((l-4))
 	a=$a$rand$b
 ;;
 esac

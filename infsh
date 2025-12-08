@@ -11,7 +11,8 @@
 # 'objetivo'   a colorear. "Entrecomillar", o escapar caracteres especiales '⧵c'
 # 'SEP'        '¬' separador de instancias.
 #
-# '[]' opcional, '{}' opcionales relacionadas, '()' obligatorias excluyentes
+# '[]' opcional, '{}' ops.relacionadas
+# '()' obligatoria, solo una '<>' obl. al menos una
 # '|'  alternativa, ··· continua instruccion, ... mas instancias
 # '⧵ ∕' caracteres para suplantar barras invertidas si necesario
 # '⧵⧵r' hace que se respeten los espacios|tabs al inicio de un comentario
@@ -22,7 +23,7 @@
 
 
 infsh(){
-[ ${#3} -eq 0 ] && { infsh ~/code/infsh 3 17 ; return ;}
+[ ${#3} -eq 0 ] && { infsh ~/code/infsh 3 18 ; return ;}
 local a=$1 i=$2 f=$3 o=""
 shift 3
 [ $# -eq 0 ] || o="$@ ¬"

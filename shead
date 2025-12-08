@@ -35,7 +35,7 @@
 # Por defecto se muestran todas las lineas y se resaltan las coincidencias.
 # Por 'pre/sufijo' se muestran las lineas con coincidencias sin resaltado. Se
 # puede filtrar por contenido con '-p *filtro' o '-s filtro*' para mostrar solo
-# las lineas coincidentes; si se indica color 'filtro' no puede tener comodines.
+# las lineas coincidentes. Si se indica color 'filtro' no puede tener comodines.
 #
 #(1) si el archivo tiene una sola linea sin salto de linea, read lee la linea
 # y sale del bucle sin ejecutar su contenido.

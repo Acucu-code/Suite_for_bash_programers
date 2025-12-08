@@ -83,15 +83,15 @@ $tize_ct && tize_tx=$ct || tize_tx="$rs"
 
 
 tize(){
-local cm="" dr="$PWD" ef=true ae="" tize_v="" sl='
+local tize_cm="" tize_dr="$PWD" tize_ef=true tize_ae="" tize_v="" tize_sl='
 '
 # cm comodin - dr dir_previo - ef no_echo_final - ae archivo_entrada - tize_v variable_destino - sl salto_de_linea
 tize_sp="/" tize_tx="" tize_ct=false # global
 # sp separador - tx texto - ct contar
 
 while [ $# -ne 0 ] ; do case $1 in
-	-a) while read cm ; do ae="$ae$cm$sl" ; done < "$2" ; shift 2 ; ae=${ae%$sl} ; set -- "$@ $tize_sp $ae" ;;
-	-e) ef=false ; shift ;;
+	-a) while read tize_cm ; do tize_ae="$tize_ae$tize_cm$tize_sl" ; done < "$2" ; shift 2 ; tize_ae=${tize_ae%$tize_sl} ; set -- "$@ $tize_sp $tize_ae" ;;
+	-e) tize_ef=false ; shift ;;
 	-s) tize_sp="$2" ; shift 2 ;;
 	-v) tize_v="$2" ; shift 2 ;;
 	-C) tize_ct=true ; shift ;;
@@ -100,18 +100,18 @@ esac ; done
 
 [ $# -ne 0 ] || { infsh ~/code/tize 3 31 -u objetivo ; return ;}
 cd $tmp/vacio
-cm=$@ tize_tx=${cm##* $tize_sp } # texto
+tize_cm=$@ tize_tx=${tize_cm##* $tize_sp } # texto
 
-[ "$cm" = "$tize_tx" ] && { tize_sp="" ; tize_fun $tize_tx ;} || {  # <-texto simple
-	set -- ${cm% $tize_sp *} # Quita ultimo separador y el texto
+[ "$tize_cm" = "$tize_tx" ] && { tize_sp="" ; tize_fun $tize_tx ;} || {  # <-texto simple
+	set -- ${tize_cm% $tize_sp *} # Quita ultimo separador y el texto
 	sep -s $tize_sp -O 'tize_fun $sep_C' $@
 }
 
-cd "$dr"
+cd "$tize_dr"
 [ ${#tize_v} -ne 0 ] && eval $tize_v='$tize_tx' || {
 	[ ${#BASH} -ne 0 ] && echo -e -n "$tize_tx" || echo -n "$tize_tx"
 }
-$ef || echo
+$tize_ef || echo
 }
 
 
