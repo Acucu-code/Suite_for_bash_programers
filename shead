@@ -74,15 +74,15 @@ local ln="" tr="" mt=true sp="øo" ft=""
 		}
 	} || { # Prefijo/Sufijo
 		case $shead_pt in
-			P)  tr=${shead_tx#$shead_ft}   pt=${shead_tx%$tr} ;;
-			PP) tr=${shead_tx##$shead_ft*} pt=${shead_tx%$tr} ;;
-			S)  tr=${shead_tx%$shead_ft}   pt=${shead_tx#$tr} ;;
-			SS) tr=${shead_tx%%*$shead_ft} pt=${shead_tx#$tr} ;;
+			P)  tr=${shead_tx#$shead_ft}   pt=${shead_tx%"$tr"} ;;
+			PP) tr=${shead_tx##$shead_ft*} pt=${shead_tx%"$tr"} ;;
+			S)  tr=${shead_tx%$shead_ft}   pt=${shead_tx#"$tr"} ;;
+			SS) tr=${shead_tx%%*$shead_ft} pt=${shead_tx#"$tr"} ;;
 		esac
 		[ ${#shead_md} -ne 0 -a "$shead_tx" != "$tr" ] && { # mostrar y no mostrar filtro
 			[ ${#shead_rp} -ne 0 ] || {
 				shead_nr=$((shead_nr+1))
-				$shead_md && shead_cl="-q" || [ ${#shead_cl} -eq 0 -o ${#shead_ne} -gt 0 ] && shead_ne="-n"
+				$shead_md && shead_cl="-q" || [ ${#shead_cl} -gt 0 ] || shead_ne="-n"
 				tize -v pt -s $sp $shead_ne $shead_cl $shead_ft $sp "$pt"
 				[ $shead_pt = P -o $shead_pt = PP ] && shead_tx=$pt$tr || shead_tx=$tr$pt
 			}
