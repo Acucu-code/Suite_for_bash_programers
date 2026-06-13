@@ -26,9 +26,10 @@
 # incluido en control(un script del panel) al alcanzar cierta temperatura
 
 
-[ $1 ] || { infsh ~/code/tempfreq_log 3 23 ; return ;}
+# export code=$HOME/code # necesario si se lanza desde el panel de MATE
+# que tiene /home/root/code en vez del usuario
 
-export code=$HOME/code # necesario si se lanza desde el panel que tiene code en /root
+[ $1 ] || { infsh $code/tempfreq_log 3 23 ; return ;}
 
 echo $@ > $tmp/tempfreq.ops
 
