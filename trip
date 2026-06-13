@@ -24,7 +24,7 @@ local trip_v="" trip_s="" trip_u=false trip_o="" trip_c="" trip_w="" trip_y="" t
 [ "$1" != "-n" ] || { shift ; trip_s="-n" ;}
 [ "$1" != "-u" ] || { shift ; trip_u=true ;}
 case "$1" in -p|-s|-m) trip_o=$1 ; shift ;; esac
-[ $# -gt 1 ] || { infsh ~/code/trip 3 17 ; return ;}
+[ $# -gt 1 ] || { infsh $code/trip 3 17 ; return ;}
 [ ${0##*/} = trip -o "$trip_s" = "-n" ] && trip_c="$1" trip_s="$2" || {
 	trip_v=$1 trip_c=$2 ; eval trip_s=\$$trip_v ;
 }

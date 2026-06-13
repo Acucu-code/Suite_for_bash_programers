@@ -5,11 +5,11 @@
 # \\r    tempfreq [l|i|h|q|aqui] [ [0|intervalo] [0|repeticiones] [0|amplitud] [0|temperatura] log[true|false] ] &
 #
 # Al menos se debe dar una opcion:
-# 'intervalo' de refresco en segundos
-# 'repeticiones' nº repeticiones u ocurrencias para aplicar la modulacion
-# 'amplitud' rango de modulacion x ±100Mz
-# 'temperaturaº' a no sobrepasar en esceso
-# 'log' - informacion detallada true/false
+# 'intervalo' de refresco en segundos, 60 por defecto
+# 'repeticiones' nº de refrescos para aplicar la modulacion, 2 por defecto
+# 'amplitud' rango de modulacion: 1 = ±100Mz, 2 por defecto
+# 'temperaturaº' a no sobrepasar en esceso, por defecto escogera una apropiada
+# 'log' - informacion detallada en cada refresco: true/false
 #
 # Esta pensado para ir en background, funcionando de manera automatica.
 #
@@ -17,7 +17,7 @@
 #
 # pone intervalo a 10”, amplitud de modulacion a ⇐200 Mz y activa el log.
 #
-# Una vez iniciado se dispone de las siguientes opciones:
+# Una vez iniciado en background se dispone de las siguientes opciones:
 # 'q' termina el programa
 # 'l' muestra/oculta el log
 # 'i' muestra informacion
@@ -25,7 +25,7 @@
 #
 # \\r    tempfreq i    # muestra informacion sobre el programa, variables y log.
 #
-# Cuando es gestionado por 'tempfreq_log', 'aqui' traera su salida al tty.
+# Puede usar la aplicacion en ventana 'tempfreq_log' para control de frecuencia
 #
 # A mas intervalo y mas repeticiones, mas estabilidad de frecuencia, pero mayor
 #riesgo de sobrecalentamiento.
@@ -40,13 +40,13 @@
 # Aparte de en CONSTANTES ,OPCIONES PREDETERMINADAS y VARIABLES; otras estan
 # declaradas en CONTROL DE EJECUCION ,INFORMACION y marcadas con (VAR).
 # (ARCH) marca los archivos de trabajo.
-# FUNCIONADO - EN PROCESO - GESTIONABLE EN VIVO CON tempfreq_log, y este es lanzado automaticamente por tempfreq_pan <-- control
 
 
-[ $include_ctl ] || . include ; include tize varize # isnum - varize incluye enum y este isnum
+[ $include_ctl ] || . include ; include tize varize killer # isnum - varize incluye enum y este isnum
 
 
 tempfreq(){
+local c0=0 c1=0 c2=0 c3=0 c4=0 c5=0 c6=0 cpu="" dp="" dt="" f="" ff="" fm="" fmd="" fmn="" fmna="" fmx="" fmxa="" fmxf="" fnmn="" fnmx="" fp="" ia="" ib="" inf="" l="" lf="" lt="" m="" ma="" mc="" mcr="" mf="" mfa="" mfr="" mp="" mt="" mv="" pmc="" pmcn="" prg="" sl="" t="" ta="" tc="" td="" tf="" tfc="" tf_tmp="" tmn="" tmx="" tnmx="" tp="" tty="" tty_ctl="" w="" x="" y="" z=""
 
 tty_ctl(){
 [ -e $tf_tmp.tty ] && read tty < $tf_tmp.tty || return 1
@@ -59,7 +59,7 @@ salir(){ # SALIDA
 	! tty_ctl || [ -e $tf_tmp""_log.pid ] || tize $prg / "Saliendo de $prg"
 	rm $tf_tmp.pid $tf_tmp.ops
 	#echo $c1\\t$c2\\t$c3\\t$c4\\t$c5\\t$c6 >> tempfreq.clases # registro de uso de clases
-	[ "$1" = "r" ] && { >$tf_tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { echo ; exit ;}
+	[ "$1" = "r" ] && { >$tf_tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { kill -cont `pidof command-applet` ; echo ; exit ;} # &&  kill `pidof tempfreq_log` ;rm $tf_tmp""_log.pid
 } #
 # trap salir INT TERM QUIT KILL ABRT HUP
 
@@ -73,7 +73,7 @@ rdiv(){ # ASIGNA O MUESTRA EL VALOR DE UNA VARIABLE LEIDA DE UN ARCHIVO DIVIDIDA
 
 
 info(){ # INFORMACION
-[ $# -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x=\$$i ; echo $i=$x ; done ; return ;}
+[ $# -ne 0 -a "$1" != "-" ] && { for i in $@ ; do eval x=\$$i ; echo -n $i=$x" " ; done ; echo ; return ;}
 [ $# -ne 0 ] || {
 	for i in "OTROS_____" ib ia sl dt tty cpu pmc pmcn prg\
 			TEMPERATURA tmn tp t tmx tc tnmx ta td tf tfc \
@@ -103,7 +103,7 @@ info(){ # INFORMACION
 
 
 { # CONTROL DE EJECUCION
-	[ $1 ] || { infsh ~/code/tempfreq 3 32 ; return ;}
+	[ $1 ] || { infsh $code/tempfreq 3 32 ; return ;}
 	prg=${0##*/} # (VAR)
 	tf_tmp=$tmp/$prg # (VAR)
 	#donde se muestra la salida (ARCH) (VAR)
@@ -111,13 +111,13 @@ info(){ # INFORMACION
 	tty_ctl || varize -e tty /bin/tty > $tf_tmp.tty
 	[ -e $tf_tmp.pid ] && read x < $tf_tmp.pid && [ -e /proc/$x ] && { # REENTRADA
 		echo $@ > $tf_tmp.ops # (ARCH) opciones
-		read x < $tf_tmp.slp ; [ -e "/proc/$x" ] && kill -TERM $x &>/dev/null
+		read x < $tf_tmp.slp ; [ -e "/proc/$x" ] && kill $x
 		exit
 	} || { # 1ª ENTRADA
 		/bin/renice -n 19 -p $$ > /dev/null
 		# /bin/chrt -i -p 0 $$
 		echo $$ > $tf_tmp.pid # (ARCH) pid del programa
-		dt=/sys/devices/platform/coretemp.0/hwmon/hwmon1 # (VAR)
+		dt=/sys/devices/platform/coretemp.0/hwmon/hwmon? # (VAR)
 		[ -e $tf_tmp.tmn ] || rdiv tmn $dt/temp1_input - > $tf_tmp.tmn # (VAR) (ARCH) temperatura minima dada
 		[ -e $tf_tmp.rbt ] && { printf %b '\eM\eM'>$tty ; rm $tf_tmp.rbt ;} # reboot
 	info -
@@ -141,7 +141,7 @@ info(){ # INFORMACION
 
 { # OPCIONES PREDETERMINADAS
 	tc=$((tnmx-(tnmx/5))) # temperatura de control
-	ib=120 # intervalo base de refresco
+	ib=60 # intervalo base de refresco
 	mfr=2 # factor de repeticion
 	mf=2 # amplitud/factor de modulacion
 	l=false # log
@@ -156,9 +156,9 @@ ops(){ # ESTABLECE LAS OPCIONES
 	esac
 	[ $# -gt 1 ] && isnum $2 && [ $2 -gt 0 ] && mfr=$2 || :
 	[ $# -gt 2 ] && isnum $3 && [ $3 -gt 0 ] && mf=$3 || :
-	[ $# -gt 3 ] && isnum $4 && [ $4 -gt 0 ] && tc=$4 || :
+	[ $# -gt 3 ] && isnum $4 && [ $4 -gt 0 ] && tc=$4 tfc=0 || :
 	[ $# -gt 4 ] && [ "$5" = true -o "$5" = false ] && l=$5 || :
-	tty_ctl && tize -e -c 7 "$prg: $ib˝  $mfr""↷  ±$((mf*ff))Mz  $tcº  $l">$tty
+	tty_ctl && tize -e -c 7 "$prg: $ib˝  $mfr""↷  ±$((mf*ff))Mz  $tcº  $l">$tty >$tf_tmp.com
 mcr=0
 }
 ops $@ # OPCIONES EN LINEA DE ORDENES
@@ -174,7 +174,7 @@ ops $@ # OPCIONES EN LINEA DE ORDENES
 	ta=$((tc-tmn)) # amplitud de temperaturas
 	td=$((tc-t)) # diferencia de temperatura
 	tf=0 # factor de temperatura de control sobrepasada
-	tfc=0 # factor de temperatura cuenta
+	tfc=0 # factor de temperatura sobrepasada, cuenta
 # frecuencias
 	rdiv f $dp''0/scaling_cur_freq # frecuencia actual
 	# fnmx frecuencia nominal maxima
@@ -218,8 +218,9 @@ ops $@ # OPCIONES EN LINEA DE ORDENES
 
 
 max_freq(){ # ESTABLECE LA FRECUENCIA MAXIMA
-	for n in ${cpu} ; do
-		echo $(($1*1000)) > $dp$n/scaling_max_freq
+[ $1 -gt $fnmx ] && set -- $fnmx || { [ $1 -lt $fnmn ] && set -- $fnmn ;}
+	for i in ${cpu} ; do
+		echo $(($1*1000)) > $dp$i/scaling_max_freq
 	done
 }
 max_freq $fmd
@@ -237,12 +238,18 @@ while : ; do # RUTINA
 		i) tty_ctl && info $z ;;
 		l) $l && l=false || l=true ;;
 		r) salir r ;;
-		h) infsh ~/code/tempfreq 3 32 >$tty ;;
-		m) fmx=$fnmx fmxf=$fnmx fmxa=$fnmx fmna=$fmd ;;
-		d) fmx=$fmd fmxf=$fnmx fmxa=$fmd fmna=$fmn ;;
-		n) fmx=$fmn fmxf=$fmd fmxa=$fmd fmna=$fnmn ;;
-		+) fmna=$fmx fmx=$((fmx+100)) fmxf=$fnmx fmxa=$fmx ;;
-		-) fmxf=$fmx fmx=$((fmx-100)) fmxa=$fmx fmna=$fnmn ;;
+		h) infsh $code/tempfreq 3 32 >$tty ;;
+
+
+
+		m) fmxf=$fnmx	fmna=$fnmx	fmx=$fnmx			fmxa=$fnmx ;;
+		d) fmxf=$fmd	fmna=$fmd	fmx=$fmd			fmxa=$fmd ;;
+		n) fmxf=$fmn	fmna=$fmn	fmx=$fmn			fmxa=$fmn ;;
+		+) fmxf=$fnmx	fmx=$((fmx+100))	fmna=$fmx	fmxa=$fnmx ;;
+		-) fmxa=$fmx	fmx=$((fmx-100))	fmna=$fnmn	fmxf=$fmx ;;
+
+
+
 		=) [ ${#z} -ne 0 ] || z=$fmx ; fmx=$z fmxf=$z fmxa=$z fmna=$z ;;
 		""|aqui) : ;;
 		*) isnum $x && ops ${x} ${z} || ${x} ${z} ;;
@@ -254,14 +261,10 @@ mcr=0
 
 { # REVALORIZADO
 	rdiv t $dt/temp1_input
-	[ $t -ge $tnmx ] || [ $fmxa -eq $fmn -a $t -ge $tc -a $t -ge $tp ] && {
-		read x < $tf_tmp.pid
-		[ $pmc -lt $x ] && x="Detenga procesos que usen mucha CPU." || {
-			kill -STOP $pmc
-			x="Se detuvo el programa $pmcn($pcm) que estaba sobrecalentando el sistema."
-		}
+	[ $t -ge $tnmx ] || [ $fmxa -eq $fmn -a $t -ge $tc -a $t -ge $tp ] && { # ALERTA DE TEMPERATURA
+		max_freq $fnmn # Aplicar Frecuencia Minima
 		sndfile-play sonido/sonidos/trin.wav>/dev/null
-		xterm -fc 6 -T '!!!ALERTA DE TEMPERATURA!!!' -e sudo -p "$x Contraseña:" top -o %CPU -d 10
+		xterm -fc 6 -T '!!!ALERTA DE TEMPERATURA!!!' -e sudo -p "Detenga procesos que usen mucha CPU($pmcn/$pmc). Contraseña:" top -o %CPU -d 10
 	} || :
 	[ $t -lt $tmn ] && { tmn=$t ; echo $t > $tf_tmp.tmn ;} || :
 	rdiv f $dp''0/scaling_cur_freq
@@ -280,11 +283,7 @@ mcr=0
 	! $l || { [ $t -gt $tp ] && lt="TP<" || lt="TP≥" ; lt=$lt"T<TC" ;}
 	[ $tf -gt 0 ] && { # reciente sobrecalentamiento
 		tf=$((tf-mfa))
-		[ $tf -gt -1 ] || { #tf<0 comprueba uso CPU y si bajo recupera fnmx
-			tf=0 fm=$f
-			varize z pgrep -r R
-			[ ${#z} -ne 0 ] || fmxf=$fnmx pmc=-1 pmcn=""
-		}
+		[ $tf -gt 0 ] || tf=0 fm=$f fmxf=$fnmx pmc=-1 pmcn=""
 	} || { # ok
 		: # fmna=$fmd # oxr pru
 	}
@@ -308,7 +307,7 @@ mcr=0
 		} || :
 	}
 } || {  # tº igual o mayor que tº de control
-	[ $tf -gt 0 ] || { #tf==0 identifica programa alto uso CPU antes de aumentar
+	[ $tf -gt 0 ] || { # identifica programa alto uso CPU antes de aumentar
 
 		varize -m pmc pmcn -- pgrep -l -r R
 		# pmcn=${pmc#* } pmc=${pmc% *}
@@ -393,6 +392,7 @@ mcr=0
 		lt=$lt" $tº$z$tmxº $tfc$x$tcº $w $f$y$fm $m $fmxa""Mz\n"
 		tize -e -c 4 -b ——————————————————————————————————————
 		echo -n " $lt"
+		[  ${#pmcn} -eq 0 ] || tize -c 71 -p " "$pmcn
 	}>$tty
 	tp=$t fp=$f
 	[ ${#inf} -ne 0 ] && l=$inf inf=""
@@ -405,6 +405,19 @@ sl=$!
 echo $sl >$tf_tmp.slp # (ARCH) pid del sleep
 wait $sl 2>/dev/null # oculta mensaje terminated
 }
+
+
+# INTENTO de utilizar 'read -t'
+# - Es necesario qu sea #!/bin/bash
+# - Se ejecutan 2 tempfreq ¿?. VISTO: en realidad lanza otro como 'read?' cada iteracion
+# - Con 'wait' Se bloquea si se pulsa enter, sin devuelve error ni valor de $r
+# { # PAUSA
+# read -t $ia r &
+# sl=$!
+# echo $sl >$tf_tmp.slp
+# fg # con 'wait -f $sl' se bloquea al pulsar enter
+# }
+
 
 done
 

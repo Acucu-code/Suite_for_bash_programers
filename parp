@@ -172,8 +172,8 @@ sep -s $parp_s -O '$parp_l && parp_i=$parp_i$sep_C" $parp_s " ; parp_fun $sep_C 
 
 
 parp_inf(){ # AYUDA
-	infsh ~/code/parp 3 31
-	parp -v parp/paleta.esc
+	infsh $code/parp 3 31
+	parp -v /home/oxr/parp/paleta.esc
 	# local c="" b="" r="" i="" f="" x=""
 	# for r in ". º" ". =" "." "º" "=" ""; do # PALETA DE COLORES
 		# for i in 0 1 2 3 4 5 6 7 ; do

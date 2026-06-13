@@ -2,13 +2,13 @@
 # oxr 2025
 # Enumera una cantidad en sus integrantes o cuenta las palabras de una frase
 #
-# \\r    enum [-e] [var] -c frase | nº [cº]
+# \\r    enum [-e] [var] (-c frase|nº [cº])
 #
 # 'var' nombre de la variable a la que asignar el resultado
 # '-c'  devuelve el numero de palabras de la frase
 # 'nº'  cantidad a enumerar
 # 'cº'  comienzo de la enumeracion, 0 por defecto
-# '-e'  muestra el resultado, si no 'var' ni '-c' tambien
+# '-e'  muestra el resultado, si no 'var' ni '-c' lo mostrara por defecto
 #
 # \\r    enum x 3 ; for i in $x ; do ... ; done
 #
@@ -23,7 +23,7 @@
 
 enum(){
 local enum_v="" enum_n=0 enum_c=0 enum_r="" enum_e=false
-[ $# -ne 0 ] || { infsh ~/code/enum 3 17 ; return ;}
+[ $# -ne 0 ] || { infsh $code/enum 3 17 ; return ;}
 
 while [ $# -ne 0 ] ; do case $1 in
 -e) enum_e=true ; shift ;;

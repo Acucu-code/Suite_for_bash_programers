@@ -25,33 +25,26 @@ CONTENT:
 
 CONFIGURATION:
 
-1. These scripts must be in the /home/$USER/code folder, since 'include',
-'tempfreq_log', and the calls from each script to 'infsh' refer to this folder:
+Include the config script in your .bashrc:
 
-user$ echo PATH=$PATH:~/code >> ~/.bashrc
+user$ echo ". PATH_TO/acucu_code.conf" >> /home/$USER/.bashrc
 
-2. Some tools' working files are located in /tmp/$USER and others use
-/tmp/$USER/vacio to operate with wildcards [*|?] without incident.
-
-[ -e /tmp/$USER/vacio ] || { mkdir /tmp/$USER ; mkdir -m -w /tmp/$USER/vacio ;} >> ~/.bashrc
-
-3. 'tempfreq' and 'tempfreq_log' modify the CPU frequency. If not run as root,
-the user must first be granted permission:
-
-user$ sudo chown $USER:$USER /sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq
-
-OTHERS:
+"PATH_TO" is the folder where you have placed the acucu_code files. You can edit
+the configuration file to define this folder to make it accessible to the scripts.
 
 This is a suite because most scripts depend on others. They use 'include', which
 manages inclusion. Some only work if included, either with 'include' or directly
-with '. script'.
+with '. script_name'.
 
-A call to '. include varize rand infsh check' will include all scripts except 'fin'
-that is not necessary, 'tempfreq' that is not includable, and 'tempfreq_log'
-that opens a window.
+A call to '.include varize check infsh' will include all scripts except 'fin',
+which is generally for single use (root only), 'tempfreq', which is an active
+program, and 'tempfreq_log', which also opens a terminal window when executed.
+
+'tempfreq' and 'tempfreq_log' modify the CPU frequency. If not run as root,
+the user must first be granted permission:
+
+user$ sudo chown $USER:$USER \
+	/sys/devices/system/cpu/cpufreq/policy*/scaling_max_freq
 
 To obtain information about a command, it is usually enough to run it without
 any options, currently only in Spanish.
-
-For english manual view  https://acucu-code.github.io/Suite_for_bash_programers/.
-This usually not actualized. Revise the script header.

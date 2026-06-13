@@ -3,17 +3,19 @@
 # Filtra lineas por contenido o pre/sufijo, puede remarcar, borrar o reemplazar,
 # contar y definir el modo de salida.
 #
-# \\r    (|) shead (-a archivo) [-o archivo] [-t] [-l|-C] [-S SEP] [-n] ···
+# \\r    (|) shead (-a archivo) [-o archivo] (-V var) [-v var] [-i] [-l|-C] [-S SEP] [-n] ···
 # ···   [-f nº|inicioº [finº]] [-z] [-b] [-u] [-P] [-c colorº] [-p|-pp|-s|-ss] ···
 # ···    [-|!] [--] filtro [-r reemplazo] [SEP nueva instancia [SEP ...]]
 #
 # Opciones generales:
-# '-a'       lee de archivo sino de la salida standard '|', excluyentes entre si
+# '-a'       lee de archivo sino de la salida standard '|'
 # '-o'       salida a otro archivo
-# '-t'       devolvera todas las lineas en modo pre/sufijo
+# '-V'       lee de variable
+# '-v'       asigna el resultado a 'var'
+# '-i'       invertir modo de salida, ver nota final
 # '-l'       mostrara el nº de linea
 # '-C'       devolvera el nº de lineas concordantes, si '!' las resultantes; por
-# \\r           pre/sufijo siempre las concordantes
+# ···           pre/sufijo siempre las concordantes
 # '-S'       separador, por defecto es '/'
 # '-n'       sin estilo
 # '-f'       filtrara las nº ultimas lineas. Ultima opcion general
@@ -43,16 +45,13 @@
 # INCLUIBLE EN OTROS SCRIPTS '. shead'
 
 
-# EN PROCESO
-# Rehacer bloque pre/sufijo mostrar filtro al modo aplicado al de no mostrar,
-# compartir el sistema de diferenciacion y reducir las instrucciones tize
-
 [ $include_ctl ] || . include ; include tize isnum path
 
 
 shead_fun(){
-local ln="" tr="" mt=true sp="øo" ft=""
-# ln nºlinea - tr texto_restante - mt mostrar - sp separador_para_tize - pt parte
+local ft="" ln="" mt=true sp="øo" tr=""  #$T='	'
+# ln nºlinea - mt mostrar - pt parte - sp separador_para_tize - tr texto_restante
+
 [ ${#shead_ft} -eq 0 ] || { # filtrar
 	[ $shead_pt = I ] && { # Contenido
 		tr=${shead_tx##*$shead_ft}
@@ -61,35 +60,35 @@ local ln="" tr="" mt=true sp="øo" ft=""
 				case $shead_md in
 				false) # mostrar
 						[ ${#shead_cl} -ne 0 ] || shead_cl="-c 2"
-						shead_nr=$((shead_nr+1))
+						shead_nc=$((shead_nc+1))
 						tize -v shead_tx -s $sp $shead_ne $shead_cl $shead_ft $sp "$shead_tx" ;;
 				true) # no mostrar el filtro
-						shead_nr=$((shead_nr+1))
+						shead_nc=$((shead_nc+1))
 						tize -v shead_tx -s $sp $shead_ne -q $shead_ft $sp "$shead_tx" ;;
 				  "") # no mostrar lineas coincidentes
-					# shead_nr=$((shead_nr+1))
+					# shead_nc=$((shead_nc+1))
 					mt=false ;;
 				esac
-			} || { [ ${#shead_md} -ne 0 ] || shead_nr=$((shead_nr+1)) ;}
+			} || { [ ${#shead_md} -ne 0 ] || shead_nc=$((shead_nc+1)) ;}
 		}
 	} || { # Prefijo/Sufijo
 		case $shead_pt in
-			P)  tr=${shead_tx#$shead_ft}   pt=${shead_tx%"$tr"} ;;
+			P)  tr=${shead_tx#$shead_ft}   pt=${shead_tx%"$tr"} ;; # entrecomillado por si barras de escape
 			PP) tr=${shead_tx##$shead_ft*} pt=${shead_tx%"$tr"} ;;
 			S)  tr=${shead_tx%$shead_ft}   pt=${shead_tx#"$tr"} ;;
 			SS) tr=${shead_tx%%*$shead_ft} pt=${shead_tx#"$tr"} ;;
 		esac
 		[ ${#shead_md} -ne 0 -a "$shead_tx" != "$tr" ] && { # mostrar y no mostrar filtro
 			[ ${#shead_rp} -ne 0 ] || {
-				shead_nr=$((shead_nr+1))
+				shead_nc=$((shead_nc+1))
 				$shead_md && shead_cl="-q" || [ ${#shead_cl} -gt 0 ] || shead_ne="-n"
 				tize -v pt -s $sp $shead_ne $shead_cl $shead_ft $sp "$pt"
 				[ $shead_pt = P -o $shead_pt = PP ] && shead_tx=$pt$tr || shead_tx=$tr$pt
 			}
 		} || { # no mostrar lineas coincidentes - se mostraran lineas no coincidentes
 			[ ${#shead_md} -eq 0 -a "$shead_tx" = "$tr" ] || { # siempre que no sean true
-				[ ${#shead_md} -ne 0 ] || shead_nr=$((shead_nr+1))
-				$shead_mt || mt=false
+				[ ${#shead_md} -ne 0 ] || shead_nc=$((shead_nc+1))
+				$shead_in || mt=false
 			}
 		}
 	}
@@ -99,7 +98,7 @@ local ln="" tr="" mt=true sp="øo" ft=""
 # solo pasa si las 2 son false
 [ ${#shead_rp} -eq 0 ] || [ "$shead_tx" = "${shead_tx##*$shead_ft}" ] || { # reemplazar
 	[ ${#shead_cl} -ne 0 ] || { [ $shead_pt != I ] || shead_cl="-c 6" ;}
-	shead_nr=$((shead_nr+1))
+	shead_nc=$((shead_nc+1))
 	[ $shead_pt = P -o $shead_pt = S ] && {
 		[ ${#shead_cl} -eq 0 ] || tize -v shead_rp $shead_cl $shead_rp
 # echo --$shead_rp--$tr--
@@ -111,39 +110,45 @@ local ln="" tr="" mt=true sp="øo" ft=""
 }
 
 #aplicar
-$shead_nm && ! $shead_mi && ln=$shead_ct"\t" || :
+$shead_nm && ! $shead_mi && ln=$shead_nl$T || :
 
 shead_rs="$shead_rs$ln$shead_tx$shead_sl"
+
 }
 }
 
 
 shead(){
-local dp="$PWD" ae="" cm="" as="" td="" it="" sp="/" in=1 ul=0 at=$tmp/shead
-# dp directorio_previo - ae archivo - cm comodin - as archivo_salida - td todo - it instancia - sp separador - in inicial - ul ultima - at archivo_temporal
-shead_nm=false shead_tx="" shead_ft="" shead_rs="" shead_pt="I" shead_md=false shead_ct=0 shead_sl='\n' shead_rp=""
-shead_cr=false shead_nr=0 shead_mt=false shead_ne="" shead_mi=false shead_cl=""
-# nm numerar - tx texto - ft filtro - rt resultado - pt parte - md modo - ct contador - sl salto_linea - rp reemplazo - dr devolver_resultados - nr nº_resultados - mt mostrar_todo - nm numerar_lineas - mi multiinstancias - cl color - ne sin estilo
-[ $# -ne 0 ] || { infsh ~/code/shead 3 38 -c 7 filtro ¬ -c 5 Ultima opcion ; return ;}
+local ae="" as="" at=$tmp/shead cm="" dp="$PWD" in=1 it="" sp="/" td="" ul=0
+# ae archivo - as archivo_salida - at archivo_temporal - cm comodin - dp directorio_previo - in inicial - it instancia - sp separador - td todo - ul ultima - v nombre variable
+shead_cc=false shead_cl="" shead_ft="" shead_in=false shead_md=false shead_mi=false shead_nc=0 shead_ne="" shead_nl=0 shead_nm=false shead_pt="I" shead_rp="" shead_rs="" shead_tx="" shead_sl='
+'
+# cc contar lineas con coincidencias - cl color - ft filtro  - in invertir modo de salida - md modo - mi multiinstancias - nc nº de lineas con coincidencias - ne sin estilo - nl contador de lineas - nm numerar_lineas - pt parte - rp reemplazo - rs resultado - sl salto_linea - tx texto
+shead_v="" shead_V=""
 
-# echo "pid_orden(\$$) $$ -- orden(\$0) $0 -- nº_param(\$#) $# -- param(\$@) $@"
-# echo "ultimo_param(\$_) $_ -- pid_ultimo_proc(\$!) $! -- codigo_salida(\$?) $?"
+[ $# -ne 0 ] || { infsh -i $code/shead 3 40 -c 7 filtro ¬ -c 4 Ultima opcion ; return ;}
 
 while [ $# -ne 0 ] ; do case "$1" in # opciones generales
 	-a)	path ae "$2" && shift 2 || { echo "No existe el archivo $2" ; return ;} ;;
 	-o) sa=true as="$2" ; shift 2 ;;
+	-v) shead_v=$2 ; shift 2 ;;
+	-V) shead_V=$2 ; shift 2 ;;
 	-l) shead_nm=true ; shift ;;
 	# -z) shead_sl="" ; shift ;; # movido a ops. instancias
 	-n) shead_ne="-n" ; shift ;;
-	-t) shead_mt=true ; shift ;;
+	-i) shead_in=true ; shift ;;
 	-S) sp="$2" ; shift 2 ;;
-	-C) shead_cr=true shead_ne="-n" ; shift ;;
-	-f)	[ ${#ae} -ne 0 ] && {
-		while read shead_tx ; do ul=$((ul+1)) ; done < "$ae" ; in=$((ul+1-$2))
+	-C) shead_cc=true shead_ne="-n" ; shift ;;
+	-f)	in=0 ; [ ${#ae} -ne 0 ] && {
+		while read shead_tx ; do
+			[ ${#shead_tx} -eq 0 ] && { in=$((in+1)) ; continue ;} || { in=0 ul=$((ul+1)) ;}
+		done < "$ae"
+		[ $in -eq 0 ] && in=1 || in=2 ; in=$((ul+in-$2))
 		} || {
 			>$at
-			while read shead_tx ; do ul=$((ul+1)) ; echo $shead_tx >> $at ; done ; in=$((ul+1-$2))
-			ae=$at
+			while read shead_tx ; do
+				[ ${#shead_tx} -eq 0 ] && continue || { ul=$((ul+1)) ; echo $shead_tx >> $at ;}
+			done ; in=$((ul+1-$2)) ae=$at
 		}
 		shift 2 ;;
 	 *)	[ ${#ae} -eq 0 -a -e "$1" ] && {
@@ -177,7 +182,8 @@ while : ; do #Gestion de instancias
 		-b) shead_cl="$shead_cl -b" ; shift ;; #no bold
 		-z) shead_sl=" " ; shift ;;
 		--)shift;break;;
-		*)break;;
+		*) $shead_in && [ $shead_pt = I ] && { shead_in=false shead_pt=P ; set -- *$@ ;}
+		break;;
 	esac ; done
 #filtro
 	shead_ft=$@
@@ -187,37 +193,45 @@ while : ; do #Gestion de instancias
 		[ "$shead_ft" = "${shead_ft#* -r}" ] || shead_ft=${shead_ft%% -r} shead_rp='\b' #shead_rp=$shead_ft" -r "'\b'
 	}
 	[ $ul -ne 0 ] || ul=10000
+
 #Accion
+[ ${#shead_V} -eq 0 ] || { eval echo "\"\$$shead_V\"" > $at ; ae=$at ;}
+
 	[ ${#ae} -ne 0 ] && {
 	while read shead_tx ; do
-		shead_ct=$((shead_ct+1))
-		[ $shead_ct -ge $in ] || continue
+		shead_nl=$((shead_nl+1))
+		[ $shead_nl -ge $in ] || continue
 		shead_fun
 		shead_tx="" #(1)
-		[ $shead_ct -lt $ul ] || break
+		[ $shead_nl -lt $ul ] || break
 	done < "$ae"
 	[ ! "$shead_tx" ] || shead_fun #(1)
 	} || {
 	while read shead_tx ; do
-		shead_ct=$((shead_ct+1))
-		[ $shead_ct -ge $in ] || continue
+		shead_nl=$((shead_nl+1))
+		[ $shead_nl -ge $in ] || continue
 		shead_fun
-		[ $shead_ct -lt $ul ] || break
+		[ $shead_nl -lt $ul ] || break
 	done
 	}
 
 [ "$td" != "$it" ] || break
-		ae=$at in=1 shead_mi=true shead_nr=0 shead_rp="" shead_pt="I" shead_md=false shead_ct=0 shead_ft=""
+		ae=$at in=1 shead_mi=true shead_nc=0 shead_rp="" shead_pt="I" shead_md=false shead_nl=0 shead_ft=""
 		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" > "$ae" || echo -n "$shead_rs" > "$ae"
 		shead_rs=""
 done
 
+# salida
 cd "$dp"
-$shead_cr && return $shead_nr || { # nº de resultados
+shead_rs="${shead_rs# }" shead_rs="${shead_rs% }" # quita espacios
+$shead_cc && { # contar
+	[ ${#shead_v} -gt 0 ] && eval $shead_v='$shead_nc' || return $shead_nc
+} || {
+	[ ${#shead_v} -gt 0 ] && { eval $shead_v='$shead_rs' ; return ;}
 	[ ${#as} -eq 0 ] && { # salida a pantalla
 		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" || echo -n "$shead_rs"
 	} || { # salida a archivo
-		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" >> "$as" || echo -n "$shead_rs" >> "$as"
+		[ ${#BASH} -ne 0 ] && echo -e -n "$shead_rs" > "$as" ||	echo -n "$shead_rs" > "$as"
 	}
 }
 }
@@ -230,11 +244,7 @@ $shead_cr && return $shead_nr || { # nº de resultados
 # SOLUCION ACTUAL
 # Directorio de trabajo vacio
 # mkdir -m -w -p $tmp/vacio
-
-
-[ ${0##*/} != shead ] || shead "$@"
-
-
+#
 # GESTION MANUAL DE * ,reemplaza con ?[?...] - ya no hace falta
 # . enum
 # x=1234567
@@ -248,4 +258,6 @@ $shead_cr && return $shead_nr || { # nº de resultados
 # echo --"$y"--${x%$y}--
 #
 
+
+[ ${0##*/} != shead ] || shead "$@"
 #

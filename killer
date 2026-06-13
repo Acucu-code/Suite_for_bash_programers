@@ -1,0 +1,39 @@
+#!/bin/sh
+#oxr 2026
+# Gestiona procesos si existen, no da error; por defecto termina el proceso
+#
+#\\r	killer [-s|-c|-k|-señal] pid|nombre ...
+#
+# '-s' 	stop
+# '-c' 	cont
+# '-k'	kill
+# '-*'	señal
+#
+#
+#\\r
+# ⧵∕
+
+[ $include_ctl ] || . include ; include isnum
+
+
+killer(){ # la funcion esta derivada a la salida:  killer(){ ... } 1>/dev/null
+[ $# -gt 0 ] || { infsh $code/killer 3 10 >&2 ; return ;}
+local o="-TERM" n=false
+case "$1" in
+	-s) o=-STOP ; shift ;;
+	-c) o=-CONT ; shift ;;
+	-k) o=-KILL ; shift ;;
+	-*) o=$1 ; shift ;;
+esac
+while [ $# -gt 0 ] ; do
+echo killer:"'$@'"
+	isnum $1 && { [ -e /proc/$1 ] || return 1 ;} || { pidof $1 && n=true || return 1 ;}
+	$n && pkill $o $1 || kill $o $1
+	n=false
+	shift
+done
+} 1>/dev/null
+
+
+[ ${0##*/} != killer ] || killer "$@"
+#

@@ -1,21 +1,24 @@
 #!/bin/sh
 #oxr 2025
-# Estiliza la cabecera de un script, por defecto da color a algunos objetivos
-# pero se pueden indicar otros
+# Estiliza la cabecera de un script, codigo o texto. Por defecto da color a
+# algunos objetos. Se pueden indicar otros, que sin estilo seran verdes.
 #
-# \\r	infsh archivo inicio fin [[estilo] objetivo SEP [estilo] objetivo ... ]
+# \\r	infsh [-t|-s] archivo inicio fin [[estilo] objeto SEP [estilo] objeto ... ]
 #
-# 'archivo'    del que leer la cabecera
-# 'inicio fin' lineas a mostrar
-# 'estilo'     [-c 0-7|00-77 con fondo] [-b] bold [-p] parpadeo [-u] subrayado
-# 'objetivo'   a colorear. "Entrecomillar", o escapar caracteres especiales '⧵c'
-# 'SEP'        '¬' separador de instancias.
+# '-i'		muestra info simbologia
+# '-t'		Modo texto/codigo.
+# '-s'		Modo texto/codigo. Sin comentarios
+# 'archivo'	del que leer la cabecera
+# 'inicio fin'	lineas a mostrar. Si 'fin' es 0, hasta el final
+# 'estilo'	[-c 0-7|00-77 con fondo] [-b] bold [-p] parpadeo [-u] subrayado
+# 'objeto'	a colorear. "Entrecomillar" o escapar '⧵c' caracteres especiales
+# 'SEP'		'¬' separador de instancias.
 #
-# '[]' opcional, '{}' ops.relacionadas
-# '()' obligatoria, solo una '<>' obl. al menos una
-# '|'  alternativa, ··· continua instruccion, ... mas instancias
-# '⧵ ∕' caracteres para suplantar barras invertidas si necesario
-# '⧵⧵r' hace que se respeten los espacios|tabs al inicio de un comentario
+# Simbologia usada para las cabeceras
+# '[]'	opcional, '{}' relacionadas, '()' solo una, '<>' al menos una
+# '|'	alternativa, ··· continua instruccion, ... mas instancias
+# '⧵⧵r'	hace que se respeten los espacios|tabs al inicio de un comentario
+# '⧵ ∕'	caracteres para suplantar barras invertidas si necesario
 #
 
 
@@ -23,12 +26,20 @@
 
 
 infsh(){
-[ ${#3} -eq 0 ] && { infsh ~/code/infsh 3 18 ; return ;}
-local a=$1 i=$2 f=$3 o=""
+local c=false C=false I=false s='¬ -c 7 -u Opciones generales ¬ -c 7 -u Opciones de instancia ¬ -c 6 -b SEP'
+[ "$1" != -i ] || { I=true ; shift ;}
+[ "$1" = -s ] && C=true s="" || { [ "$1" = -t ] && c=true s="" ;}
+$c || $C && shift || { [ $# -gt 2 ] || {
+		infsh $code/infsh 3 21 objeto ¬ -c 7 -u script ¬ -c 7 -u codigo ¬  -c 7 -u texto ; return
+	}
+}
+local a=$1 i=$2 f=$3 o="-c 5 -u ${1##*/} ¬"
+$c && c="" || { $C && c='- \#*' || c='-p - \#' ;}
 shift 3
-[ $# -eq 0 ] || o="$@ ¬"
-shead -n -a $a $i $f -p - \# | tb tize -s ¬ -c 3 "[" ¬ -c 3 "]" ¬ -c 2 \" ¬ -c 2 "'" ¬ -c 7 $ ¬ -c 6 "º" ¬ -c 6 "+" ¬ -c 6 "-" ¬ -c 6 "=" ¬ -c 5 "<" ¬ -c 5 ">" ¬ -c 5 "{" ¬ -c 5 "}" ¬ -c 4 "(" ¬ -c 4 ")" ¬ -c 6 "|"  ¬ -c 6 "&" ¬ -c 2 "···" ¬ -c 7 -u Opciones generales ¬ -c 7 -u Opciones de instancia ¬ -c 6 -b SEP ¬ -c 6 "/" ¬ -c 6 "⧵" ¬ -c 6 "∕" ¬ $o
-# las dos untimas barras son sustitutas de las reales
+[ $# -eq 0 ] || o="$o $@ ¬" # un separador al final es necesario para 'tize'
+shead -n -a $a $i $f $c | tb tize -s ¬ -c 3 "[" ¬ -c 3 "]" ¬ -c 2 \" ¬ -c 2 "'" ¬ -c 7 $ ¬ -c 6 "º" ¬ -c 6 "+" ¬ -c 6 "-" ¬ -c 1 "_" ¬ -c 6 "=" ¬ -c 6 ":" ¬ "<" ¬ ">" ¬ -c 5 "{" ¬ -c 5 "}" ¬ -c 4 "(" ¬ -c 4 ")" ¬ -c 6 "|"  ¬ -c 6 "&" ¬ -c 2 "···" ¬ -c 6 "/" ¬ -c 6 "⧵" ¬ -c 6 "∕" $s ¬ $o #| less -R
+# las dos ultimas barras son sustitutas de las reales
+[ ${#c} -eq 0 -o ${a##*/} = infsh -o $I = false ] || tize -b -c 40 "\nVéase 'infsh' para simbologia. oxr 2025"
 }
 
 

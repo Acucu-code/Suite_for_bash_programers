@@ -13,7 +13,7 @@
 
 path(){
 local e=true
-[ $1 ] || { infsh ~/code/path 3 11 ; return 1 ;}
+[ $1 ] || { infsh $code/path 3 11 ; return 1 ;}
 [ $1 != "-e" ] || { e=false ; shift ;}
 [ -e "$2" ] && {
 			[ "${2#/}" != "$2" ] && eval $1='$2' || eval $1='$PWD/$2'

@@ -21,7 +21,7 @@ parp -s $sp $check_T -z -c 74 [$1] $sp +- 2
 
 
 check(){
-[ $# -ne 0 ] || { infsh ~/code/check 3 10 ; return 2 ;}
+[ $# -ne 0 ] || { infsh $code/check 3 10 ; return 2 ;}
 local check_T="$@" check_R="" check_Q=true
 [ "$1" != "-" ] || { shift ; check_Q=false; }
 check_E s -

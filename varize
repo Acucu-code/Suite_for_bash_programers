@@ -5,16 +5,18 @@
 #
 # \\r    varize [-e] (-a archivo) [-l lº] [-n [cº [rº]]] {-m} var {var var... --} (orden)
 #
-# '-e'  muestra el valor
-# '-a'  archivo del que leer, excluye 'orden' y viceversa
-# '-s'  separador de campos
-# '-n'  Reparte desde cº campo hasta rº, o asigna a variables declaradas si no rº.
-# ···    Si rº=0, habra reparto hasta el final; si rº, y hay resto, a la ultima.
-# '-l'  lee de esa linea. Si no -n, se repartira entre las variables.
-# ···    Si lº=0 sera la ultima linea.
-# '-m'  multiples variables '--' fin de variables
-# 'var' nombre de variable a asignar
-# 'orden' no puede tener tuberias '|', ignora el entrecomillado
+# '-e'	muestra el valor
+# '-a'	archivo del que leer, excluye 'orden' y viceversa
+# '-s'	separador de campos
+# '-t'	Elimina sobreespaciado -- EN PRUEBAS con trip
+# '-n'	Asigna desde cº campo a cada variable hasta rº. Sin limite si no rº.
+# ···	 Si rº=0|1 y hay resto, a la ultima
+# ···	 Indicando un cº negativo asigna los ultimos campos
+# '-l'	lee de esa linea. Si no -n, se repartira entre las variables.
+# ···	 Si lº=0 sera la ultima linea.
+# '-m'	multiples variables. '--' fin de variables, opcional si solo una.
+# 'var'	nombre de variable a asignar
+# 'orden'	no puede tener tuberias '|', ignora el entrecomillado
 #
 # \\r    varize -e -m p n -- pgrep -l -r R
 #
@@ -26,69 +28,85 @@
 #
 
 
-[ $include_ctl ] || . include ; include enum # isnum - enum incluye isnum
+[ $include_ctl ] || . include ; include trip enum # isnum - enum incluye isnum
 
 
 varize(){
-[ $# -gt 1 ] || { infsh ~/code/varize 3 23 ; return ;}
-local varize_v="" varize_n="" varize_s=" " varize_e=true varize_l="" varize_c=0 varize_r="" varize_a=false varize_x="" varize_t=$tmp/varize
-# v nombres-variables - n campos/comodin - s separador -- e echo - l linea - c campo - r resto/comodin - a archivo|comodin - x comodin - t tmp
+[ $# -gt 1 ] || { infsh -i $code/varize 3 25 ; return ;}
+local ae=false cp=0 ec=true ln="" rt="" sp=" " tp=$tmp/varize tr=false
+# ae archivo|comodin - cp campo - ec echo - ln linea - rt resto/comodin - sp separador - tp tmp - tr eliminar sobreespaciado|comodin
+local varize_c="" varize_v="" varize_x="" # Diferenciadas para evitar conflictos por tratar variables externas
+# c campos/comodin - v nombres_variables - x comodin
 
 while [ $# -ne 0 ] ; do case $1 in # opciones
-	-e) varize_e=false ; shift ;;
+	-e) ec=false ; shift ;;
 	-m)	shift ; varize_v=$@ ; varize_v=${varize_v%% --*}
 		enum -c $varize_v ; shift $(($?+1))
 		set -- $@ ;	break ;;
-    -l) varize_l=$2 ; shift 2 ;;
+    -l) ln=$2 ; shift 2 ;;
 	-n) shift ; isnum $1 && {
-			varize_c=$1 ; shift ; ! isnum $1 || { varize_r=$1 ; shift ;}
-		} || varize_c=1 ;;
-	-a) cp "$2" $varize_t ; varize_a=true ; shift 2 ;;
-	-s) varize_s="$2" ; shift 2 ;;
-	*) varize_v=$1 ; shift ; break ;;
+			cp=$1 ; shift ; ! isnum $1 || { rt=$1 ; shift ;}
+		} || cp=1 ;;
+	-a) cp "$2" $tp ; ae=true ; shift 2 ;;
+	-s) sp="$2" ; shift 2 ;;
+	-t) tr=true ; shift ;;
+	*) varize_v=$1 ; shift ; [ "$1" = -- ] && shift ; break ;;
 esac ; done
 
-$varize_a || "$@" > $varize_t # ejecucion orden
+$ae || "$@" > $tp # ejecucion orden
 
-[ ${#varize_l} -eq 0 ] || { # linea
-	[ $varize_l -eq 0 ] && { # ultima linea
-		while read varize_a ; do varize_l=$varize_x varize_x=$varize_a ; done < $varize_t # por ultimo salto de linea
-		[ ${#varize_x} -eq 0 ] || varize_l=$varize_x
-	} || { # tal linea
-		enum varize_a $varize_l
-		for varize_x in $varize_a ; do read varize_l ; done < $varize_t
-	}
-	echo "$varize_l" > $varize_t
+! $tr || { # quitar espacios extra
+while read ae ; do trip -n -u " " "$ae" > $tp".tr" ; done < $tp
+cp $tp".tr" $tp
 }
 
-[ $varize_c -eq 0 ] || { # campos
-	read varize_l < $varize_t
-	IFS=$varize_s enum -c "$varize_l"
-	[ $? -lt $varize_c ] && { # campo inexistente
+[ ${#ln} -eq 0 ] || { # linea
+	[ $ln -eq 0 ] && { # ultima linea
+		while read ln ; do
+			[ ${#ln} -eq 0 ] && continue || varize_x=$ln
+		done < $tp
+		ln=$varize_x
+	} || { # tal linea
+		enum ae $ln
+		for varize_x in $ae ; do read ln ; done < $tp
+	}
+	echo "$ln" > $tp
+}
+
+[ $cp -eq 0 ] || { # campos
+	read ln < $tp
+	IFS=$sp enum ae -c "$ln"
+	[ $ae -lt $cp ] && { # campo inexistente
 		eval unset $varize_v # puede dar el valor que tenia antes
 		return
 	} || { # primer campo
-		enum varize_a $((varize_c-1))
-		for varize_x in $varize_a ; do varize_n=$varize_n'*'$varize_s ; done
-		varize_n="${varize_l#$varize_n}"
-		[ ${#varize_r} -ne 0 ] || { # por variables
-				enum -c $varize_v ;
-				varize_r=$((($?+varize_c)-1)) ;
+		[ $cp -lt 0 ] && { # establece los $cp ultimos campos
+			tr="" #cp=$((cp*-1))
+			enum ae $((ae+cp))
+			for i in $ae ; do tr="$tr*$sp" ; done
+			ln="${ln#$tr}" #cp=0
+		}
+		enum ae $((cp-1))
+		for varize_x in $ae ; do varize_c=$varize_c'*'$sp ; done
+		varize_c=${ln#$varize_c}
+		[ $cp -gt -1 ] || cp=$((cp*-1)) # Dependiendo de esto en modo normal le asigna el resto
+		[ ${#rt} -ne 0 ] || { # por variables
+				[ $cp -lt 0 ] && rt=1 || { enum -c $varize_v ; rt=$((($?+cp)-1)) ;} #
 		}  # ultimo campo
-		IFS=$varize_s enum -c "$varize_l"
-		enum varize_a $(($?-varize_r))
-		varize_r=""
-		for varize_x in $varize_a ; do varize_r=$varize_r$varize_s'*' ; done
-		varize_n="${varize_n%$varize_r}"
-		echo "$varize_n" > $varize_t
+		IFS=$sp enum -c "$ln"
+		enum ae $(($?-rt))
+		rt=""
+		for varize_x in $ae ; do rt=$rt$sp'*' ; done
+		varize_c=${varize_c%$rt}
+		echo "$varize_c" > $tp
 	}
 }
 
-[ "$varize_s" = " " ] && eval read $varize_v < $varize_t || eval IFS=$varize_s read $varize_v < $varize_t # asignacion a variables
+[ "$sp" = " " ] && eval read $varize_v < $tp || eval IFS=$sp read $varize_v < $tp # asignacion a variables
 
-$varize_e || { # echo
-	for varize_x in $varize_v ; do eval varize_n=\$$varize_x
-		echo "$varize_n" ;
+$ec || { # echo
+	for varize_x in $varize_v ; do eval varize_c=\$$varize_x
+		echo "$varize_c"
 	done
 }
 }

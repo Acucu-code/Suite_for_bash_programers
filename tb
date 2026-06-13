@@ -1,39 +1,49 @@
 #!/bin/sh
 # oxr 2025
-# Captura la salida de una orden o lee de archivo, entregando cada linea a un
-# script u orden de darse, y/o ejecuta cada linea recibida. A falta de comando
-# muestra las lineas.
+# Captura la salida standard o lee de archivo. Muestra, ejecuta, o entrega cada
+# linea a un script o comando. Pensado para scripts, y comandos que no leen de
+# la salida standard.
 #
-# \\r    (|) tb [-n] (-a archivo) [-c | orden ]
+# \\r    (|) tb [-n] (-a archivo) [-c|comando]
 #
-# '-a'    archivo. De no darse se lee de la entrada standard
-# '-n'    no 'echo' tras cada ejecucion desde tuberia
-# '-c'    a falta de comando ejecuta las lineas como tales, en vez de mostralas
+# '-a'    archivo del que leer las lineas
+# '-n'    no 'echo' tras cada linea
+# '-c'    ejecuta las lineas como ordenes
 #
-#(1) si el archivo tiene una sola linea, sin salto de linea; read lee la linea
-# y sale del bucle sin ejecutar su contenido.
+# (1) si el archivo tiene una sola linea, sin salto de linea; read lee la linea
+#  y sale del bucle sin ejecutar su contenido.
+# (2) Intento infructuoso de que respete los espacios/tabs al principio de la 1º linea
+# (3) si se añade tambien comando o algo inesperado dara resultados imprevisibles
 
 
 tb(){
-[ $# -gt 0 ] || { infsh ~/code/tb 3 11 ; return ;}
+[ $# -gt 0 ] || { infsh $code/tb 3 11 ; return ;}
 
 local l="" a="" n=false
 
 while : ; do case "$1" in # OPCIONES
 	(-n) shift ; n=true ;;
-	(-a) a="$2" ; shift 2 ; [ ${#a} -gt 0 ] || { echo "tb: No existe el archivo '$a'" ; return ;} ;;
-	(-c) shift ; n=true ; set -- $@ eval ;;
-	("")  set -- echo ; break ;;
-	(*) break ;;
+	(-a) a="$2" ; shift 2 ; [ -e "$a" ] || { echo "tb: No existe el archivo '$a'" ; return ;} ;;
+	(-c) shift ; n=true ; set -- $@ eval ;; # (3)
+	(""|--)  set -- echo ; break ;; # (2) [ ${#BASH} -eq 0 ] && echo -n '\r' || echo -e -n '\r'
+	(*) [ -e "$1" ] && {
+		[ -d "$1" ] || a="$1" ; shift ;
+	} || {
+		tipo "$1" ; [ $? -lt 5 ] && { set -- "$@" ; break ;} || {
+			[ ${#a} -eq 0 ] && {
+				echo "tb: archivo o comando '$1' no exite" ; return;
+			} || break ;
+		}
+	} ;;
 esac ; done
 
-[ ${#a} -eq 0 ] && {
-	while read l ; do # lee de tuberia
+[ ${#a} -eq 0 ] && { # lee de tuberia
+	while read l ; do
 		"$@" "$l"
 		$n || echo
 	done
-} || {
-	while read l ; do # lee de archivo
+} || { # lee de archivo
+	while read l ; do
 		"$@" "$l"
 		# $n || echo
 	done < "$a"

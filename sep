@@ -2,11 +2,13 @@
 # oxr 2025
 # Separa instancias y puede ejecutar ordenes compuestas con cada una de ellas
 #
-# \\r    sep [-E|-L|-T]|[-s|-S SEP] [-R] [(+|-)N] [-O 'orden..$sep_C..orden..'] -A archivo|instancias
+# \\r    sep [-E|-L|-T]|[-s|-S SEP] [-R] [(+|-)N] ···
+# ···	 [-V var|-O 'orden..$sep_C..orden..'] (-A archivo|$instancias|instancias)
 #
 # Opciones generales:
 # '-A' lee instancias de archivo
 # '-O' orden/es a ajecutar por cada instancia; de no darse, estas se mostraran.
+# '-V' variable a asignar el resultado
 # '$sep_C' literal, es la variable que contiene cada instancia
 # '--' fin de opciones
 # 'instancias' puede ser: $insts|instSEPinst...|o nada si se lee desde archivo
@@ -54,18 +56,21 @@
 
 
 sep(){
-local sp=" " it="" sep_C="" sep_or="" st=false nr="" tb='	' rt='
-'
-# sep_C comodin - sp separador - sep_or orden - it instancias - st strip  - tb tabulador - rt salto_de_linea - nr no_return
-[ $# -ne 0 ] || { infsh ~/code/sep 3 24 -c 2 -b sep_C ; return ;}
+local ae=false sp=" " it="" sep_C="" sep_or="" st=false nr="" x=""
+
+sep_V=""
+
+# sep_C comodin - sep_V variable destino - sp separador - sep_or orden - it instancias - st strip - nr no_return - x comodin
+[ $# -gt 0 ] || { infsh -i $code/sep 3 25 -c 2 -b sep_C ; return ;}
 
 until [ $# -eq 0 ] ; do case $1 in # opciones generales
-	-A) while read sep_C ; do it="$it$sep_C$rt" ; done < "$2" ; it=${it%$rt} ; shift 2 ;;
+	-A) ae=true ; while read sep_C ; do it="$it$sep_C$R" ; done < "$2" ; it=${it%$R} ; shift 2 ;;
 	-O) sep_or="$2" ; shift 2 ;;
+	-V) sep_V=$2 ; shift 2 ;;
 	-s) sp=" $2 " ; shift 2 ;;
 	-S) sp="$2" ; shift 2 ;;
-	-L) sp="$rt" ; shift ;;
-	-T) sp="$tb" ; shift ;;
+	-L) sp="$R" ; shift ;;
+	-T) sp="$T" ; shift ;;
 	-E) sp=" " ; shift ;;
 	-N) st=true ; shift ;;
 	-R) nr="-n" ; shift ;;
@@ -76,12 +81,12 @@ esac ; done
 [ ${#it} -ne 0 ] || it=$@
 
 until [ "$sep_C" = "$it" ] ; do # instancias
-	set -- $it
+	$ae && [ "$sp" = "$R" -o "$sp" = "$T" ] && set -- "$it" || set -- $it
 	while : ; do case $1 in # opciones en instancia
 		-s) sp=" $2 " ; shift 2 ;;
 		-S) sp="$2" ; shift 2 ;;
-		-L) sp="$rt" ; shift ;;
-		-T) sp="$tb" ; shift ;;
+		-L) sp="$R" ; shift ;;
+		-T) sp="$T" ; shift ;;
 		-E) sp=" " ; shift ;;
 		-N) st=true ; shift ;;
 		+N) st=false ; shift ;;
@@ -92,8 +97,15 @@ until [ "$sep_C" = "$it" ] ; do # instancias
 
 	it=$@ sep_C=${it%%$sp*} it=${it#*$sp}
 
-	[ ${#sep_or} -ne 0 ] && eval "$sep_or" || { $st && echo $nr "$sep_C" || echo $nr $sep_C ;}
+	[ ${#sep_or} -ne 0 ] && eval "$sep_or" || {
+		[ ${#sep_V} -gt 0 ] && {
+			$st && x="$x$sep_C$R" || x=$x$sep_C$R
+		} || {
+			$st && echo $nr "$sep_C" || echo $nr $sep_C
+		}
+	}
 done
+[ ${#sep_V} -eq 0 ] || { x=${x%$R} ; eval $sep_V='$x' ;}
 }
 
 

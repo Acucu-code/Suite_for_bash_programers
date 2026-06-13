@@ -14,7 +14,7 @@
 rand(){
 local rand=0 t=0 a=0 b=0 c=0 d=0 n=$1 m=$2 l=${#2}
 
-[ $# -gt 0 ] || { infsh ~/code/rand 3 5 ; return ;}
+[ $# -gt 0 ] || { infsh $code/rand 3 5 ; return ;}
 
 [ $l -eq 0 ] && n=0 m=$1 l=${#m}
 

@@ -2,15 +2,16 @@
 # oxr 2025
 # Da estilo, elimina ,reemplaza o cuenta ocurrencias en un texto
 #
-# \\r    tize [-e] [-s SEP] [-C] [-v var] (-a archivo) ···
-# ···    [-n] | [[-c nº|-f nº] [-b] [-p] [-u] ]] ···
-# ···    [-q] objetivo [-r reemplazo] [SEP nueva instancia...] [--] (SEP texto)
+# \\r    tize [-e] [-s SEP] [-C] [-v var] (-a archivo) (-o 'orden') ···
+# ···    [-n] | [[-c nº|-f nº] [-b] [-p] [-u]] ···
+# ···    [(-q) objetivo (-r reemplazo)] [SEP nueva instancia...] [--] (SEP texto)
 #
 # Opciones generales:
 # '-s'    SEParador de instancias, '/' por defecto. Antes que '-a'.
 # '-C'    cuenta las coincidencias.
 # '-v'    nombre de variable a asignar el resultado.
 # '-a'    lee de archivo, separadores en archivo diferente al de instancias.
+# '-o'    actua sobre la salida de una orden.
 # '-e'    'echo' al final.
 # Opciones de instancia:
 # '-c|-f' formato de color y fondo: -c (0-7 ó mas fondo 00-77) -f (0-7).
@@ -34,26 +35,23 @@
 #
 
 
-[ $include_ctl ] || . include ; include sep
+[ $include_ctl ] || . include ; include sep #varize
 
 
 tize_fun(){
-local rs="" ob="" rt="" rg="" cl=";92" fd=";49" bd=1 ex="" cs=0 ec='[' rp=false rx=0 nc=false ct=0 md=""
-# rs resultado - ob objetivo - rt resto - rg registro - cl color - fd fondo - bd bold - ex expandir - md modificacion
-# cs contador_seguridad - ec escape_caracter - rp reemplazar - rx resto_exp - nc no colorear - ct contador
+local bd=1 cl=";92" cs=0 ct=0 ec='[' ex="" fd=";49" md="" nc=false ob="" rg="" rp=false rs="" rt="" rx=0
+# bd bold - cl color - cs contador_seguridad - ct contador - ec escape_caracter - ex expandir - fd fondo - md modificacion - nc no colorear - ob objetivo - rg registro - rp reemplazar - rs resultado - rt resto - rx resto_exp
 
-while [ ${#2} -ne 0 ] ; do # Estilo - si no hay $2 no es una opcion
-	case $1 in
-		-c) [ ${#2} = 1 ] && cl=";9"$2 || cl=";9"${2%?} fd=";4"${2#?} ; shift 2 ;;
-		-f) fd=";4"$2 ; shift 2 ;;
-		-p) fd=$fd";5" ; shift ;;
-		-b) bd=0 ; shift ;;
-		-u) fd=$fd";4" ; shift ;;
-		-n) $nc && nc=false || nc=true ; shift ;;
-		--) shift ; break ;;
-		*) break ;;
-	esac
-done
+while [ ${#2} -ne 0 ] ; do case $1 in # Estilo - si no hay $2 no es una opcion, ya es texto
+	-c) [ ${#2} = 1 ] && cl=";9"$2 || cl=";9"${2%?} fd=";4"${2#?} ; shift 2 ;;
+	-f) fd=";4"$2 ; shift 2 ;;
+	-p) fd=$fd";5" ; shift ;;
+	-b) bd=0 ; shift ;;
+	-u) fd=$fd";4" ; shift ;;
+	-n) $nc && nc=false || nc=true ; shift ;;
+	--) shift ; break ;;
+	*) break ;;
+esac ; done
 
 [ ${#tize_sp} -ne 0 ] || { $nc && tize_tx=$@ || tize_tx=$ec$bd$cl$fd"m"$@$ec"0m" ; return ;} # texto simple
 
@@ -83,22 +81,25 @@ $tize_ct && tize_tx=$ct || tize_tx="$rs"
 
 
 tize(){
-local tize_cm="" tize_dr="$PWD" tize_ef=true tize_ae="" tize_v="" tize_sl='
+local tize_ae="" tize_cm="" tize_dr="$PWD" tize_ef=true tize_or="" tize_v="" tize_sl='
 '
-# cm comodin - dr dir_previo - ef no_echo_final - ae archivo_entrada - tize_v variable_destino - sl salto_de_linea
-tize_sp="/" tize_tx="" tize_ct=false # global
-# sp separador - tx texto - ct contar
+# ae archivo_entrada - cm comodin - dr dir_previo - ef no_echo_final - sl salto_de_linea - or orden - v variable_destino
 
-while [ $# -ne 0 ] ; do case $1 in
+tize_ct=false tize_sp="/" tize_tx="" # global
+# ct contar - sp separador - tx texto
+
+while [ $# -ne 0 ] ; do case $1 in # Generales - si no hay $2 no es una opcion, ya es texto
 	-a) while read tize_cm ; do tize_ae="$tize_ae$tize_cm$tize_sl" ; done < "$2" ; shift 2 ; tize_ae=${tize_ae%$tize_sl} ; set -- "$@ $tize_sp $tize_ae" ;;
 	-e) tize_ef=false ; shift ;;
 	-s) tize_sp="$2" ; shift 2 ;;
 	-v) tize_v="$2" ; shift 2 ;;
 	-C) tize_ct=true ; shift ;;
+	# -o) varize tize_or $2 ; shift 2 ; set -- "$@ $tize_sp $tize_or" ;;
+	-o) $2>$tmp/tize ; while read cm ; do tize_or="$tize_or $cm$sl" ; done <$tmp/tize ; shift 2 ; set -- "$@ $tize_sp $tize_or" ;;
 	*) break ;;
 esac ; done
 
-[ $# -ne 0 ] || { infsh ~/code/tize 3 31 -u objetivo ; return ;}
+[ $# -ne 0 ] || { infsh -i $code/tize 3 32 -u objetivo ; return ;}
 cd $tmp/vacio
 tize_cm=$@ tize_tx=${tize_cm##* $tize_sp } # texto
 

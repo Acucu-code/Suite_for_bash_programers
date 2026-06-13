@@ -1,12 +1,41 @@
 #!/bin/sh
 # oxr 2025
-# Log de tempfreq con opciones de control de la frecuencia
+# Log de tempfreq con control de frecuencia y mas opciones
+#
+# Dos modos pasar parametros: opciones de tempfreq y propias de tempfreq_log
+#
+# \\r	tempfreq_log [o [int rep amp temp log?]]
+#
+# \\r	tempfreq_log [r|i|m|d|n]
+#
+# Ya funcionando dispone de:
+# 'o' opciones de tempfreq
+# 'q' salir, solo de tempfreq_log si ya estaba funcionando tempfreq
+# 'r' reiniciar tempfreq
+# 'i' si se indican nombres de variables, solo muestra esas: i fmxa mv
+# 'm' maxima frecuencia
+# 'd' media		''
+# 'n' minima	''
+# '+' aumenta en 100Mhz, tendera a seguir aumentando
+# '-' disminuye, tendera a seguir disminuyendo
+# '=' mantiene la frecuencia actual, [+-mnd] para desbloquear
+# '*' si es un numero asigna esa frecuencia y la mantiene
+# 'aqui' traera la salida al tty.
+#
 # Este script es llamado automaticamente por tempfreq_pan que a su vez es
 # incluido en control(un script del panel) al alcanzar cierta temperatura
 
+[ $1 ] || { infsh $code/tempfreq_log 3 23 ; return ;}
+
+echo $@ > $tmp/tempfreq.ops
+
+[ -e $tmp/tempfreq_log.pid ] && {
+	read x < $tmp/tempfreq.slp
+	kill $x
+	return
+}
 
 xterm -T 'TempFreq_Log' -fc 4 -geometry 38x3+0-0 -e sh -c '
-# PATH=$PATH:~/code
 . isnum
 tize -c 2 [ / -c 2 ] / "[l]log/no [i]info []refrescar [q]salir\n\
 [nº]tope [m]max [d]med [n]min [+|-]mod\n\
@@ -20,7 +49,7 @@ true) tempfreq l &
 ;;esac
 sleep 1 ; echo $$>$nm""_log.pid
 _tf(){ echo $1 > $nm.$2 ; kill -TERM $x ;}
-while : ; do read r
+while read r ; do
 [ ${#r} -ne 0 ] && isnum $r && r="= $r"
 read x < $nm.slp
 case ${r%% *} in
@@ -30,4 +59,5 @@ q) rm $nm""_log.pid ; $e || { _tf q ops ; sleep 1 ;} ; return ;;
 *) $r ;;
 esac ; done
 ' &
+
 #
