@@ -59,7 +59,7 @@ salir(){ # SALIDA
 	! tty_ctl || [ -e $tf_tmp""_log.pid ] || tize $prg / "Saliendo de $prg"
 	rm $tf_tmp.pid $tf_tmp.ops
 	#echo $c1\\t$c2\\t$c3\\t$c4\\t$c5\\t$c6 >> tempfreq.clases # registro de uso de clases
-	[ "$1" = "r" ] && { >$tf_tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { kill -cont `pidof command-applet` ; echo ; exit ;} # &&  kill `pidof tempfreq_log` ;rm $tf_tmp""_log.pid
+	[ "$1" = "r" ] && { >$tf_tmp.rbt ; exec $0 $ib $mfr $mfa $tc $l ; return ;} || { killer -c command-applet ; echo ; exit ;} # &&  kill `pidof tempfreq_log` ;rm $tf_tmp""_log.pid
 } #
 # trap salir INT TERM QUIT KILL ABRT HUP
 
@@ -103,7 +103,7 @@ info(){ # INFORMACION
 
 
 { # CONTROL DE EJECUCION
-	[ $1 ] || { infsh $code/tempfreq 3 32 ; return ;}
+	[ $1 ] || { infsh ~/code/tempfreq 3 32 ; return ;}
 	prg=${0##*/} # (VAR)
 	tf_tmp=$tmp/$prg # (VAR)
 	#donde se muestra la salida (ARCH) (VAR)
@@ -111,7 +111,7 @@ info(){ # INFORMACION
 	tty_ctl || varize -e tty /bin/tty > $tf_tmp.tty
 	[ -e $tf_tmp.pid ] && read x < $tf_tmp.pid && [ -e /proc/$x ] && { # REENTRADA
 		echo $@ > $tf_tmp.ops # (ARCH) opciones
-		read x < $tf_tmp.slp ; [ -e "/proc/$x" ] && kill $x
+		read x < $tf_tmp.slp ; [ -e "/proc/$x" ] && killer -t $x
 		exit
 	} || { # 1ª ENTRADA
 		/bin/renice -n 19 -p $$ > /dev/null
@@ -238,7 +238,7 @@ while : ; do # RUTINA
 		i) tty_ctl && info $z ;;
 		l) $l && l=false || l=true ;;
 		r) salir r ;;
-		h) infsh $code/tempfreq 3 32 >$tty ;;
+		h) infsh ~/code/tempfreq 3 32 >$tty ;;
 
 
 

@@ -25,7 +25,10 @@
 # Este script es llamado automaticamente por tempfreq_pan que a su vez es
 # incluido en control(un script del panel) al alcanzar cierta temperatura
 
-[ $1 ] || { infsh $code/tempfreq_log 3 23 ; return ;}
+
+[ $1 ] || { infsh ~/code/tempfreq_log 3 23 ; return ;}
+
+export code=$HOME/code # necesario si se lanza desde el panel que tiene code en /root
 
 echo $@ > $tmp/tempfreq.ops
 

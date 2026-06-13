@@ -1,11 +1,12 @@
 #!/bin/sh
 #oxr 2026
-# Gestiona procesos si existen, no da error; por defecto termina el proceso
+# Gestiona procesos si existen, no da error
 #
-#\\r	killer [-s|-c|-k|-señal] pid|nombre ...
+#\\r	killer -t|-s|-c|-k|-señal pid|nombre ...
 #
-# '-s' 	stop
+# '-t' 	term
 # '-c' 	cont
+# '-s' 	stop
 # '-k'	kill
 # '-*'	señal
 #
@@ -20,10 +21,12 @@ killer(){ # la funcion esta derivada a la salida:  killer(){ ... } 1>/dev/null
 [ $# -gt 0 ] || { infsh $code/killer 3 10 >&2 ; return ;}
 local o="-TERM" n=false
 case "$1" in
+	-t) O=-TERM ; shift ;;
 	-s) o=-STOP ; shift ;;
 	-c) o=-CONT ; shift ;;
 	-k) o=-KILL ; shift ;;
-	-*) o=$1 ; shift ;;
+	-*) o=-$1 ; shift ;;
+	*) return ;;
 esac
 while [ $# -gt 0 ] ; do
 echo killer:"'$@'"
