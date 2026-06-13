@@ -22,12 +22,14 @@ CONTENT:
 - Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
 - Terminate the system by time or temperature (fin)
 - Converts a partial path to absolute and assigns it to a variable (path)
+- Manejar matrices archivables 2D (mt)
+- Gestionar procesos evitando errores de existencia (killer)
 
 CONFIGURATION:
 
 Include the config script in your .bashrc:
 
-user$ echo ". PATH_TO/acucu_code.conf" >> /home/$USER/.bashrc
+user$ echo ". PATH_TO/code.conf" >> /home/$USER/.bashrc
 
 "PATH_TO" is the folder where you have placed the acucu_code files. You can edit
 the configuration file to define this folder to make it accessible to the scripts.
