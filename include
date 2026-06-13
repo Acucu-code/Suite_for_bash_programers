@@ -21,7 +21,7 @@
 # Se supone que los script estan en $code/
 #
 
-PATH=/home/oxr/code:/bin:/sbin
+PATH=$code:/bin:/sbin
 
 # readonly tb='	' sc='\e[' sl='
 # '
