@@ -22,8 +22,8 @@ CONTENT:
 - Control temperature by adjusting CPU frequency (tempfreq, tempfreq_log)
 - Terminate the system by time or temperature (fin)
 - Converts a partial path to absolute and assigns it to a variable (path)
-- Manejar matrices archivables 2D (mt)
-- Gestionar procesos evitando errores de existencia (killer)
+- Manage archivable matrices (mt)
+- Manage processes, preventing existence errors (killer)
 
 CONFIGURATION:
 
@@ -38,7 +38,7 @@ This is a suite because most scripts depend on others. They use 'include', which
 manages inclusion. Some only work if included, either with 'include' or directly
 with '. script_name'.
 
-A call to '.include varize check infsh' will include all scripts except 'fin',
+A call to '.include infsh rand check varize mt killer' will include all scripts except 'fin',
 which is generally for single use (root only), 'tempfreq', which is an active
 program, and 'tempfreq_log', which also opens a terminal window when executed.
 
