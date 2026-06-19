@@ -67,7 +67,7 @@ while [ ${#rt} -ne 0 ] ; do #aplicacion
 	[ "$1" = "-q" ] || { # reemplazar / colorear
 		$rp && { $nc || md=$ec$bd$cl$fd"m"$md$ec"0m" ;} || { $nc && md=$ob || md=$ec$bd$cl$fd"m"$ob$ec"0m" ;}
 	}
-	[ "${rt#$ob}" != "$rt" ] || { # resto no comienza con objetivo
+	[ "${rt#"$ob"}" != "$rt" ] || { # resto no comienza con objetivo
 		rg=$rg${rt%%$ob*} rs=$rs${rt%%"$ob"*} # añade texto hasta objetivo
 		[ "$rg" != "$tize_tx" ] || { ct=$((ct-1)) ; break ;} # todo leido
 	}
